@@ -1,44 +1,66 @@
-import random
 import time
+import re
+import serial
 
 from backend.supabase_client import supabase
 
+# PORTA_SERIAL = "COM3" mudar porta depois
+VELOCIDADE = 115200
+
 LIMITE_TEMPERATURA = 30
-INTERVALO_ENVIO = 30
+INTERVALO_ENVIO = 300
 
 ultimo_envio = None
 
-while True:
-    temperatura = round(random.uniform(25, 35), 2)
+def extrair_temperatura(linha):
+    resultado = re.search(r"TEMP:\s*(-?\d+(?:\.\d+)?)", linha)
 
-    print(f"Temperatura atual: {temperatura} °C")
+    if resultado:
+        return float(resultado.group(1))
 
-    if temperatura >= LIMITE_TEMPERATURA:
+    return None
 
-        agora = time.monotonic()
 
-        if ultimo_envio is None or agora - ultimo_envio >= INTERVALO_ENVIO:
+print("Conectando à ESP32...")
 
-            dados = {
-                "temperatura": temperatura
-            }
+with serial.Serial(PORTA_SERIAL, VELOCIDADE, timeout=1) as placa:
 
-            try:
-                resposta = supabase.table("temperaturas").insert(dados).execute()
+    print("ESP32 conectada, aguardando temperaturas...")
 
-                ultimo_envio = agora
+    while True:
+        linha = placa.readline().decode("utf-8", errors="ignore").strip()
 
-                print("Temperatura enviada ao Supabase!")
-                print(resposta.data)
+        temperatura = extrair_temperatura(linha)
 
-            except Exception as erro:
-                print(f"Erro ao enviar temperatura: {erro}")
+        if temperatura is None:
+            continue
+
+        print(f"Temperatura recebida: {temperatura} °C")
+
+        if temperatura >= LIMITE_TEMPERATURA:
+
+            agora = time.monotonic()
+
+            if ultimo_envio is None or agora - ultimo_envio >= INTERVALO_ENVIO:
+
+                dados = {
+                    "temperatura": temperatura
+                }
+
+                try:
+                    resposta = supabase.table("temperaturas").insert(dados).execute()
+
+                    ultimo_envio = agora
+
+                    print("Temperatura enviada ao Supabase!")
+                    print(resposta.data)
+
+                except Exception as erro:
+                    print(f"Erro ao enviar: {erro}")
+
+            else:
+                print("Limite atingido. Aguardando intervalo de envio.")
 
         else:
-            print("Temperatura elevada. Aguardando intervalo de envio.")
-
-    else:
-        print("Temperatura normal.")
-        ultimo_envio = None
-
-    time.sleep(5)
+            print("Temperatura normal.")
+            ultimo_envio = None

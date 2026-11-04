@@ -27,4 +27,4 @@ while True:
 
         for dispositivo in sensores:
             temperatura = sensor.read_temp(dispositivo)
-            print("Temperatura:", temperatura, "°C")
+            print("TEMP:" + str(temperatura))
