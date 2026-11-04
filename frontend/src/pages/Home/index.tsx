@@ -1,43 +1,46 @@
-const indicators = [
-  "Temperatura atual",
-  "Temperatura média",
-  "Sensores ativos",
-  "Alertas ativos",
-];
+import EmptyState from "../../components/dashboard/EmptyState";
+import MetricCard from "../../components/dashboard/MetricCard";
+import SectionCard from "../../components/dashboard/SectionCard";
 
-function EmptySection({ message }: { message: string }) {
-  return <p>{message}</p>;
-}
+const indicators = [
+  { label: "Temperatura atual", value: "-- °C", valueColor: "text-primary" },
+  { label: "Temperatura média", value: "-- °C", valueColor: "text-secondary" },
+  { label: "Sensores ativos", value: "0", valueColor: "text-success" },
+  { label: "Alertas ativos", value: "0", valueColor: "text-warning" },
+];
 
 export default function Dashboard() {
   return (
-    <>
-      <h2>Dashboard</h2>
+    <div className="dashboard-page space-y-2 lg:flex lg:flex-col lg:space-y-0">
+      <div className="lg:shrink-0 lg:pb-2">
+        <h2 className="text-2xl font-bold text-secondary">Dashboard</h2>
+      </div>
 
-      <section aria-labelledby="overview-heading">
-        <h3 id="overview-heading">Visão geral</h3>
-        {indicators.map((indicator) => (
-          <article key={indicator}>
-            <h4>{indicator}</h4>
-            <EmptySection message="Sem dados" />
-          </article>
-        ))}
-      </section>
+      <div className="dashboard-grid grid items-start gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
+        <section aria-label="Métricas gerais">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+            {indicators.map((indicator) => (
+              <MetricCard key={indicator.label} {...indicator} />
+            ))}
+          </div>
+        </section>
 
-      <section aria-labelledby="readings-heading">
-        <h3 id="readings-heading">Leituras de temperatura</h3>
-        <EmptySection message="Nenhuma leitura disponível." />
-      </section>
+        <div className="dashboard-scroll space-y-6 lg:pr-2">
+          <SectionCard title="Leituras de temperatura" titleId="readings-heading">
+            <EmptyState message="Nenhuma leitura disponível." />
+          </SectionCard>
 
-      <section aria-labelledby="sensors-heading">
-        <h3 id="sensors-heading">Sensores</h3>
-        <EmptySection message="Nenhum sensor disponível." />
-      </section>
+          <div className="grid gap-6 md:grid-cols-2">
+            <SectionCard title="Sensores" titleId="sensors-heading">
+              <EmptyState message="Nenhum sensor disponível." />
+            </SectionCard>
 
-      <section aria-labelledby="alerts-heading">
-        <h3 id="alerts-heading">Alertas</h3>
-        <EmptySection message="Nenhum alerta disponível." />
-      </section>
-    </>
+            <SectionCard title="Alertas" titleId="alerts-heading">
+              <EmptyState message="Nenhum alerta disponível." />
+            </SectionCard>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
