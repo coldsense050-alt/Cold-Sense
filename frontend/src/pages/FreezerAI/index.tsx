@@ -355,7 +355,12 @@ export default function FreezerAI() {
           {m?.periodo && (
             <section className="fa-cartoes" aria-label="Números do período">
               {[
-                { r: relatorio.periodo.tempo_real ? "Temperatura atual" : "No fim do período", v: `${fmt(m.atual?.temperatura)} °C` },
+                {
+                  r: m.atual?.desatualizada
+                    ? "Última leitura"
+                    : relatorio.periodo.tempo_real ? "Temperatura atual" : "No fim do período",
+                  v: `${fmt(m.atual?.temperatura)} °C`,
+                },
                 { r: "Média", v: `${fmt(m.periodo.media)} °C` },
                 { r: "Mínima", v: `${fmt(m.periodo.minima)} °C` },
                 { r: "Máxima", v: `${fmt(m.periodo.maxima)} °C` },

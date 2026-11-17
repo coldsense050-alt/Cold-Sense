@@ -73,7 +73,7 @@ export interface Anomalia {
 }
 
 export interface MetricasFreezerAI {
-  atual?: { temperatura: number | null; coletado_em: string };
+  atual?: { temperatura: number | null; coletado_em: string; desatualizada?: boolean };
   cobertura?: {
     periodo_analisado_horas: number;
     leituras: number;

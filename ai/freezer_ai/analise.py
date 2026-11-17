@@ -243,7 +243,8 @@ def analisar(
                 "atencao" if cobertura < 0.5 else "info",
                 "Interrupções no envio de leituras",
                 f"Foram recebidas {br(cobertura * 100, 0)}% das leituras esperadas no período, com "
-                f"{len(lacunas)} interrupções (a maior de {_duracao_txt(lacunas.max() / 60)}). "
+                f"{len(lacunas)} {'interrupção' if len(lacunas) == 1 else 'interrupções'} "
+                f"(a maior de {_duracao_txt(lacunas.max() / 60)}). "
                 "Isso reduz a confiabilidade da análise.",
                 "alta",
                 metricas["cobertura"],
@@ -263,9 +264,11 @@ def analisar(
                 "alta",
             )
         )
-        metricas["atual"] = {"temperatura": _r(ultima["temp"]), "coletado_em": ultima["ts"].isoformat()}
+        metricas["atual"] = {"temperatura": _r(ultima["temp"]), "coletado_em": ultima["ts"].isoformat(),
+                             "desatualizada": bool(sem_dados_min > config.limite_sem_dados_min)}
         # mesmo com poucos dados, uma temperatura fora do limite precisa ser avisada
-        _avaliar_temperatura_atual(float(ultima["temp"]), perfil, achados, "baixa", tempo_real)
+        _avaliar_temperatura_atual(float(ultima["temp"]), perfil, achados, "baixa", tempo_real,
+                                   sem_dados_min > config.limite_sem_dados_min)
         return _montar(ctx, perfil, config, agora, metricas, qualidade, achados, recente, base, suficiente=False)
 
     conf_geral = "alta" if cobertura >= 0.8 and periodo_min >= 360 else ("media" if cobertura >= 0.5 else "baixa")
@@ -285,9 +288,11 @@ def analisar(
     # temperatura "atual": mediana das últimas leituras (2 min) para não reagir a ruído
     ult = recente[recente["ts"] >= ultima["ts"] - pd.Timedelta(minutes=2)]["temp"]
     atual = float(ult.median())
-    metricas["atual"] = {"temperatura": _r(atual), "coletado_em": ultima["ts"].isoformat()}
+    metricas["atual"] = {"temperatura": _r(atual), "coletado_em": ultima["ts"].isoformat(),
+                         "desatualizada": bool(sem_dados_min > config.limite_sem_dados_min)}
 
-    _avaliar_temperatura_atual(atual, perfil, achados, conf_geral, tempo_real)
+    _avaliar_temperatura_atual(atual, perfil, achados, conf_geral, tempo_real,
+                               sem_dados_min > config.limite_sem_dados_min)
     _avaliar_taxa(serie_min, atual, perfil, metricas, achados)
     _avaliar_excursoes(recente, perfil, config, metricas, achados)
     _avaliar_aumento_incomum(recente, base, agora, perfil, config, metricas, achados)
@@ -339,8 +344,11 @@ def _avaliar_qualidade(df_bruto: pd.DataFrame, q: dict, achados: list[Achado]) -
 
 
 def _avaliar_temperatura_atual(atual: float, perfil: Perfil, achados: list[Achado], conf: str,
-                               tempo_real: bool = True) -> None:
-    quando = "atual" if tempo_real else "no fim do período"
+                               tempo_real: bool = True, desatualizada: bool = False) -> None:
+    if desatualizada:
+        quando = "da última leitura"  # sem leituras recentes: não é a temperatura de agora
+    else:
+        quando = "atual" if tempo_real else "no fim do período"
     ev = {"temperatura_atual": _r(atual), "limite_alerta": perfil.limite_alerta, "limite_critico": perfil.limite_critico}
     if atual > perfil.limite_critico:
         achados.append(Achado(
