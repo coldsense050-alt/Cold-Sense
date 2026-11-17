@@ -1,0 +1,414 @@
+{
+  "versao_formato": "1.0",
+  "gerado_por": "Freezer AI 0.1.0",
+  "gerado_em": "2026-11-16T12:07:05.751953+00:00",
+  "referencia": "2026-11-16T12:07:05+00:00",
+  "fonte": "simulacao:falha_refrigeracao",
+  "equipamento": {
+    "perfil": "freezer",
+    "descricao": "Freezer / congelador",
+    "faixa_ideal": [
+      -24.0,
+      -16.0
+    ],
+    "limite_alerta": -12.0,
+    "limite_critico": -8.0
+  },
+  "status": "critico",
+  "status_texto": "Situação crítica",
+  "pontuacao_saude": 0,
+  "resumo": "Temperatura atual: -5,0 °C. A temperatura atual é -5,0 °C, acima do limite crítico de -8,0 °C. O equipamento ficou 1,7 h acima de -12,0 °C e continua acima (pico de -4,9 °C). A temperatura está subindo de forma contínua há pelo menos 1 hora, a cerca de 4,0 °C por hora.",
+  "achados": [
+    {
+      "codigo": "temperatura_critica",
+      "severidade": "critico",
+      "titulo": "Temperatura atual crítica",
+      "mensagem": "A temperatura atual é -5,0 °C, acima do limite crítico de -8,0 °C.",
+      "confianca": "alta",
+      "evidencias": {
+        "temperatura_atual": -5.03,
+        "limite_alerta": -12.0,
+        "limite_critico": -8.0
+      }
+    },
+    {
+      "codigo": "excursao_prolongada",
+      "severidade": "critico",
+      "titulo": "Temperatura acima do limite por tempo prolongado",
+      "mensagem": "O equipamento ficou 1,7 h acima de -12,0 °C e continua acima (pico de -4,9 °C).",
+      "confianca": "alta",
+      "evidencias": {
+        "inicio": "2026-11-16T10:23:45+00:00",
+        "fim": "2026-11-16T12:07:05+00:00",
+        "duracao_min": 103.3,
+        "pico": -4.93,
+        "minutos_acima_critico": 44.8,
+        "em_andamento": true
+      }
+    },
+    {
+      "codigo": "subida_continua",
+      "severidade": "atencao",
+      "titulo": "Temperatura em subida contínua",
+      "mensagem": "A temperatura está subindo de forma contínua há pelo menos 1 hora, a cerca de 4,0 °C por hora.",
+      "confianca": "alta",
+      "evidencias": {
+        "taxa_c_por_hora_1h": 4.01,
+        "r2": 1.0,
+        "temperatura_atual": -5.03
+      }
+    },
+    {
+      "codigo": "aumento_incomum",
+      "severidade": "atencao",
+      "titulo": "Aumento incomum de temperatura",
+      "mensagem": "A temperatura média das últimas 3 h (-11,0 °C) está 6,9 °C acima do padrão habitual deste equipamento (-17,9 °C).",
+      "confianca": "alta",
+      "evidencias": {
+        "referencia": "historico",
+        "media_ultimas_horas": -10.99,
+        "horas_consideradas": 3.0,
+        "padrao_do_equipamento": -17.89,
+        "diferenca": 6.9,
+        "z_robusto": 17.3
+      }
+    },
+    {
+      "codigo": "tendencia_aquecimento",
+      "severidade": "atencao",
+      "titulo": "Tendência de aquecimento gradual",
+      "mensagem": "Nos últimos 3 dias a temperatura média subiu de forma consistente, cerca de 0,9 °C por dia (1,7 °C no total). O equipamento pode estar perdendo eficiência de refrigeração.",
+      "confianca": "media",
+      "evidencias": {
+        "variacao_c_por_dia": 0.87,
+        "variacao_total_c": 1.75,
+        "r2": 0.75,
+        "dias_avaliados": 3
+      }
+    }
+  ],
+  "recomendacoes": [
+    {
+      "prioridade": "alta",
+      "texto": "Verifique imediatamente se o equipamento está ligado e refrigerando.",
+      "motivo": "temperatura_critica"
+    },
+    {
+      "prioridade": "alta",
+      "texto": "Se a temperatura não voltar a baixar, transfira os produtos para outro equipamento e avalie se ainda estão próprios para uso.",
+      "motivo": "temperatura_critica"
+    },
+    {
+      "prioridade": "alta",
+      "texto": "Verifique o funcionamento do sistema de refrigeração (compressor, ventilador e termostato).",
+      "motivo": "excursao_prolongada"
+    },
+    {
+      "prioridade": "alta",
+      "texto": "Verifique se a porta está fechada e se o compressor está funcionando.",
+      "motivo": "subida_continua"
+    },
+    {
+      "prioridade": "media",
+      "texto": "Avalie se os produtos expostos à temperatura elevada continuam próprios para uso.",
+      "motivo": "excursao_prolongada"
+    },
+    {
+      "prioridade": "media",
+      "texto": "Verifique a vedação da porta e se foram colocados produtos quentes recentemente.",
+      "motivo": "aumento_incomum"
+    }
+  ],
+  "metricas": {
+    "cobertura": {
+      "periodo_analisado_horas": 24.0,
+      "leituras": 8640,
+      "intervalo_mediano_s": 10.0,
+      "percentual_cobertura": 100.0,
+      "lacunas": 0,
+      "maior_lacuna_min": 0.0,
+      "tempo_total_em_lacunas_min": 0.0,
+      "minutos_desde_ultima_leitura": 0.0
+    },
+    "periodo": {
+      "media": -17.12,
+      "minima": -19.17,
+      "maxima": -4.93,
+      "desvio_padrao": 2.68,
+      "percentual_na_faixa_ideal": 88.5,
+      "percentual_acima_alerta": 7.3,
+      "percentual_acima_critico": 3.1
+    },
+    "atual": {
+      "temperatura": -5.03,
+      "coletado_em": "2026-11-16T12:07:05+00:00"
+    },
+    "taxa_variacao": {
+      "15min": {
+        "taxa_c_por_hora": 3.97,
+        "r2": 0.98
+      },
+      "60min": {
+        "taxa_c_por_hora": 4.01,
+        "r2": 1.0
+      },
+      "180min": {
+        "taxa_c_por_hora": 4.0,
+        "r2": 1.0
+      }
+    },
+    "excursoes": {
+      "limite": -12.0,
+      "quantidade": 1,
+      "minutos_acima_alerta": 103.3,
+      "eventos": [
+        {
+          "inicio": "2026-11-16T10:23:45+00:00",
+          "fim": "2026-11-16T12:07:05+00:00",
+          "duracao_min": 103.3,
+          "pico": -4.93,
+          "minutos_acima_critico": 44.8,
+          "em_andamento": true
+        }
+      ]
+    },
+    "comparacao_padrao": {
+      "referencia": "historico",
+      "media_ultimas_horas": -10.99,
+      "horas_consideradas": 3.0,
+      "padrao_do_equipamento": -17.89,
+      "diferenca": 6.9,
+      "z_robusto": 17.3
+    },
+    "oscilacao": {
+      "amplitude_c": 2.24,
+      "desvio_c": 0.7,
+      "amplitude_referencia_c": 2.25,
+      "referencia": "historico",
+      "variacoes_bruscas": 0,
+      "variacoes_bruscas_por_hora": 0.0
+    },
+    "tendencia": {
+      "dias_avaliados": 3,
+      "suficiente": true,
+      "variacao_media_c_por_dia": 0.87,
+      "r2_media": 0.75,
+      "variacao_amplitude_c_por_dia": -0.03,
+      "r2_amplitude": 0.55,
+      "dias": [
+        {
+          "dia": "2026-11-14",
+          "media": -18.0,
+          "maxima": -16.78,
+          "amplitude": 2.25,
+          "percentual_acima_alerta": 0.0
+        },
+        {
+          "dia": "2026-11-15",
+          "media": -18.0,
+          "maxima": -16.77,
+          "amplitude": 2.26,
+          "percentual_acima_alerta": 0.0
+        },
+        {
+          "dia": "2026-11-16",
+          "media": -16.25,
+          "maxima": -4.93,
+          "amplitude": 2.19,
+          "percentual_acima_alerta": 14.46
+        }
+      ]
+    }
+  },
+  "qualidade_dados": {
+    "leituras_recebidas": 25920,
+    "leituras_validas": 25920,
+    "codigos_erro_sensor": {},
+    "fora_da_faixa_fisica": 0,
+    "picos_isolados": 0,
+    "descartadas": 0
+  },
+  "serie_horaria": [
+    {
+      "hora": "2026-11-15T12:00:00+00:00",
+      "media": -17.88,
+      "minima": -19.06,
+      "maxima": -16.82,
+      "leituras": 317
+    },
+    {
+      "hora": "2026-11-15T13:00:00+00:00",
+      "media": -18.16,
+      "minima": -19.12,
+      "maxima": -16.95,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-15T14:00:00+00:00",
+      "media": -17.83,
+      "minima": -19.1,
+      "maxima": -16.89,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-15T15:00:00+00:00",
+      "media": -18.17,
+      "minima": -19.16,
+      "maxima": -16.94,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-15T16:00:00+00:00",
+      "media": -17.83,
+      "minima": -19.08,
+      "maxima": -16.88,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-15T17:00:00+00:00",
+      "media": -18.16,
+      "minima": -19.16,
+      "maxima": -16.95,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-15T18:00:00+00:00",
+      "media": -17.83,
+      "minima": -19.0,
+      "maxima": -16.9,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-15T19:00:00+00:00",
+      "media": -18.15,
+      "minima": -19.17,
+      "maxima": -16.91,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-15T20:00:00+00:00",
+      "media": -17.83,
+      "minima": -19.12,
+      "maxima": -16.83,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-15T21:00:00+00:00",
+      "media": -18.17,
+      "minima": -19.1,
+      "maxima": -16.85,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-15T22:00:00+00:00",
+      "media": -17.84,
+      "minima": -19.1,
+      "maxima": -16.94,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-15T23:00:00+00:00",
+      "media": -18.16,
+      "minima": -19.03,
+      "maxima": -16.89,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-16T00:00:00+00:00",
+      "media": -17.84,
+      "minima": -19.08,
+      "maxima": -16.88,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-16T01:00:00+00:00",
+      "media": -18.17,
+      "minima": -19.13,
+      "maxima": -16.82,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-16T02:00:00+00:00",
+      "media": -17.83,
+      "minima": -19.12,
+      "maxima": -16.94,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-16T03:00:00+00:00",
+      "media": -18.17,
+      "minima": -19.13,
+      "maxima": -16.89,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-16T04:00:00+00:00",
+      "media": -17.82,
+      "minima": -19.13,
+      "maxima": -16.94,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-16T05:00:00+00:00",
+      "media": -18.16,
+      "minima": -19.08,
+      "maxima": -16.96,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-16T06:00:00+00:00",
+      "media": -17.83,
+      "minima": -19.06,
+      "maxima": -16.88,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-16T07:00:00+00:00",
+      "media": -18.16,
+      "minima": -19.08,
+      "maxima": -16.92,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-16T08:00:00+00:00",
+      "media": -17.83,
+      "minima": -19.06,
+      "maxima": -16.88,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-16T09:00:00+00:00",
+      "media": -15.61,
+      "minima": -18.69,
+      "maxima": -13.32,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-16T10:00:00+00:00",
+      "media": -11.47,
+      "minima": -13.48,
+      "maxima": -9.45,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-16T11:00:00+00:00",
+      "media": -7.47,
+      "minima": -9.58,
+      "maxima": -5.43,
+      "leituras": 360
+    },
+    {
+      "hora": "2026-11-16T12:00:00+00:00",
+      "media": -5.23,
+      "minima": -5.62,
+      "maxima": -4.93,
+      "leituras": 43
+    }
+  ],
+  "parametros": {
+    "janela_horas": 24.0,
+    "historico_dias": 7.0,
+    "intervalo_leitura_s": 10.0
+  },
+  "aviso": "Análise automática baseada apenas nas leituras de temperatura. Não substitui a avaliação de um técnico de refrigeração."
+}
