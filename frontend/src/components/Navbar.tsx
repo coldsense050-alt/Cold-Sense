@@ -21,7 +21,7 @@ export default function Navbar() {
       <Link
         to="/"
         aria-current="page"
-        className="flex items-center gap-3 rounded-lg bg-white/10 px-4 py-2.5 text-xs font-medium text-white ring-1 ring-inset ring-white/10 transition-colors hover:bg-white/15"
+        className="flex items-center gap-2.5 rounded-lg bg-white/10 px-3 py-2 text-xs font-medium text-white ring-1 ring-inset ring-white/10 transition-colors hover:bg-white/15"
       >
         <IconMain />
         Dashboard
