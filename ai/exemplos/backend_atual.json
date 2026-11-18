@@ -1,0 +1,62 @@
+[
+ {
+  "id": 0,
+  "temperatura": 30.0,
+  "coletado_em": "2026-11-16T11:00:00+00:00"
+ },
+ {
+  "id": 1,
+  "temperatura": 30.25,
+  "coletado_em": "2026-11-16T11:05:00+00:00"
+ },
+ {
+  "id": 2,
+  "temperatura": 30.5,
+  "coletado_em": "2026-11-16T11:10:00+00:00"
+ },
+ {
+  "id": 3,
+  "temperatura": 30.0,
+  "coletado_em": "2026-11-16T11:15:00+00:00"
+ },
+ {
+  "id": 4,
+  "temperatura": 30.25,
+  "coletado_em": "2026-11-16T11:20:00+00:00"
+ },
+ {
+  "id": 5,
+  "temperatura": 30.5,
+  "coletado_em": "2026-11-16T11:25:00+00:00"
+ },
+ {
+  "id": 6,
+  "temperatura": 30.0,
+  "coletado_em": "2026-11-16T11:30:00+00:00"
+ },
+ {
+  "id": 7,
+  "temperatura": 30.25,
+  "coletado_em": "2026-11-16T11:35:00+00:00"
+ },
+ {
+  "id": 8,
+  "temperatura": 30.5,
+  "coletado_em": "2026-11-16T11:40:00+00:00"
+ },
+ {
+  "id": 9,
+  "temperatura": 30.0,
+  "coletado_em": "2026-11-16T11:45:00+00:00"
+ },
+ {
+  "id": 10,
+  "temperatura": 30.25,
+  "coletado_em": "2026-11-16T11:50:00+00:00"
+ },
+ {
+  "id": 11,
+  "temperatura": 30.5,
+  "coletado_em": "2026-11-16T11:55:00+00:00"
+ }
+]
