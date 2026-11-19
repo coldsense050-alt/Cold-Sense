@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-type IconName = "plus" | "search" | "chevron" | "edit" | "trash" | "close" | "users" | "freezer";
+type IconName = "plus" | "search" | "chevron" | "edit" | "trash" | "close" | "users" | "freezer" | "checkCircle" | "alertTriangle" | "alertOctagon" | "helpCircle";
 
 const paths: Record<IconName, ReactNode> = {
   plus: <path d="M12 5v14M5 12h14" />,
@@ -11,6 +11,10 @@ const paths: Record<IconName, ReactNode> = {
   close: <path d="m6 6 12 12M18 6 6 18" />,
   users: <><circle cx="9" cy="7" r="3" /><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6M21 21v-3a6 6 0 0 0-4-5.65" /></>,
   freezer: <><path d="M12 2v20M3.5 7l17 10M3.5 17l17-10M9 4l3 3 3-3M9 20l3-3 3 3" /></>,
+  checkCircle: <><circle cx="12" cy="12" r="9" /><path d="m8 12 2.5 2.5 5.5-5.5" /></>,
+  alertTriangle: <><path d="m10.3 3.9-8.2 14.2A2 2 0 0 0 3.8 21h16.4a2 2 0 0 0 1.7-2.9L13.7 3.9a2 2 0 0 0-3.4 0Z" /><path d="M12 9v4m0 4h.01" /></>,
+  alertOctagon: <><path d="m7.5 3-4.5 4.5v9L7.5 21h9l4.5-4.5v-9L16.5 3Z" /><path d="M12 7v6m0 4h.01" /></>,
+  helpCircle: <><circle cx="12" cy="12" r="9" /><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4m.1 3h.01" /></>,
 };
 
 export default function Icon({ name, className = "size-5" }: { name: IconName; className?: string }) {

@@ -1,11 +1,14 @@
-import { useFreezer } from "../../hooks/useFreezer";
+import type { Freezer } from "../../types/freezer";
+import type { TemperaturePeriod } from "../../types/temperature";
 
 type FilterBarProps = {
   freezerId: string;
-  period: string;
+  period: TemperaturePeriod;
+  freezers: Freezer[];
+  isLoadingFreezers?: boolean;
   isRefreshing?: boolean;
   onFreezerChange: (freezerId: string) => void;
-  onPeriodChange: (period: string) => void;
+  onPeriodChange: (period: TemperaturePeriod) => void;
   onRefresh: () => void;
 };
 
@@ -32,13 +35,13 @@ function ChevronIcon() {
 export default function FilterBar({
   freezerId,
   period,
+  freezers,
+  isLoadingFreezers = false,
   isRefreshing = false,
   onFreezerChange,
   onPeriodChange,
   onRefresh,
 }: FilterBarProps) {
-  const { data: freezers, isPending: isLoadingFreezers } = useFreezer();
-
   return (
     <div
       aria-label="Filtros do dashboard"
@@ -92,7 +95,7 @@ export default function FilterBar({
           <select
             className={selectClasses}
             value={period}
-            onChange={(event) => onPeriodChange(event.target.value)}
+            onChange={(event) => onPeriodChange(event.target.value as TemperaturePeriod)}
           >
             <option value="24h">Últimas 24 horas</option>
             <option value="7d">Últimos 7 dias</option>

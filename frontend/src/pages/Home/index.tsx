@@ -1,16 +1,33 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import EmptyState from "../../components/dashboard/EmptyState";
 import FilterBar from "../../components/dashboard/FilterBar";
+import FreezerReadings from "../../components/dashboard/FreezerReadings";
 import MetricCard from "../../components/dashboard/MetricCard";
 import SectionCard from "../../components/dashboard/SectionCard";
+import TemperatureReadings from "../../components/dashboard/TemperatureReadings";
+import { useFreezer } from "../../hooks/useFreezer";
 import { useTemperature } from "../../hooks/useTemperature";
+import type { TemperaturePeriod } from "../../types/temperature";
+import type { TemperatureChartMetric } from "../../utils/temperatureChart";
+
+const TemperatureBarChart = lazy(() => import("../../components/dashboard/TemperatureBarChart"));
 
 export default function Dashboard() {
   const [freezerId, setFreezerId] = useState("all");
-  const [period, setPeriod] = useState("24h");
+  const [period, setPeriod] = useState<TemperaturePeriod>("24h");
+  const [chartMetric, setChartMetric] = useState<TemperatureChartMetric>("maximum");
   const selectedFreezerId = freezerId === "all" ? null : Number(freezerId);
-  const { indicators, isError, isPending, error, isFetching, refetch } =
-    useTemperature(selectedFreezerId);
+  const freezerQuery = useFreezer();
+  const { data: temperatures = [], indicators, isError, isPending, error, isFetching, refetch } =
+    useTemperature(selectedFreezerId, period, freezerQuery.data);
+  const selectedFreezers = selectedFreezerId === null
+    ? freezerQuery.data
+    : freezerQuery.data.filter((freezer) => freezer.id === selectedFreezerId);
+
+  function refreshDashboard() {
+    void refetch();
+    void freezerQuery.refetch();
+  }
 
   return (
     <div className="dashboard-page space-y-2 lg:flex lg:flex-col lg:space-y-0">
@@ -19,12 +36,20 @@ export default function Dashboard() {
         <FilterBar
           freezerId={freezerId}
           period={period}
-          isRefreshing={isFetching && !isPending}
+          freezers={freezerQuery.data}
+          isLoadingFreezers={freezerQuery.isPending}
+          isRefreshing={isFetching || freezerQuery.isFetching}
           onFreezerChange={setFreezerId}
           onPeriodChange={setPeriod}
-          onRefresh={() => void refetch()}
+          onRefresh={refreshDashboard}
         />
       </header>
+
+      {freezerQuery.isError && (
+        <p className="text-sm text-danger" role="alert">
+          Não foi possível carregar a lista de freezers. Use Atualizar dados para tentar novamente.
+        </p>
+      )}
 
       {isPending ? (
         <div
@@ -66,8 +91,8 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className="dashboard-grid grid items-start gap-5 md:grid-cols-[13rem_minmax(0,1fr)]">
-          <section className="min-h-0 md:h-full" aria-label="Métricas gerais">
-            <div className="grid gap-3 sm:grid-cols-2 md:h-full md:grid-cols-1 md:auto-rows-fr">
+          <section className="min-h-0 md:h-full md:overflow-y-auto md:pr-1" aria-label="Métricas gerais">
+            <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-1">
               {indicators.map((indicator) => (
                 <MetricCard key={indicator.label} {...indicator} />
               ))}
@@ -75,16 +100,28 @@ export default function Dashboard() {
           </section>
 
           <div className="dashboard-scroll space-y-6 md:pr-2">
+            <Suspense fallback={
+              <SectionCard title="Gráfico de temperaturas" titleId="temperature-chart-loading">
+                <div className="flex h-72 items-center justify-center text-sm text-muted" role="status">Carregando gráfico...</div>
+              </SectionCard>
+            }>
+              <TemperatureBarChart temperatures={temperatures} period={period} metric={chartMetric} onMetricChange={setChartMetric} />
+            </Suspense>
             <SectionCard
-              title="Leituras de temperatura"
+              title="Registros de temperaturas"
               titleId="readings-heading"
             >
-              <EmptyState message="Nenhuma leitura disponível." />
+              <TemperatureReadings key={`${freezerId}:${period}`} temperatures={temperatures} freezers={freezerQuery.data} />
             </SectionCard>
 
             <div className="grid gap-6 md:grid-cols-2">
               <SectionCard title="Freezers" titleId="freezers-heading">
-                <EmptyState message="Nenhum freezer disponível." />
+                <FreezerReadings
+                  freezers={selectedFreezers}
+                  temperatures={temperatures}
+                  isPending={freezerQuery.isPending}
+                  isError={freezerQuery.isError}
+                />
               </SectionCard>
 
               <SectionCard title="Ordens de serviço" titleId="oc-heading">
