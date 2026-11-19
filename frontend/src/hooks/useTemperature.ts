@@ -62,7 +62,7 @@ export function useTemperature(freezerID: number | null) {
       ? {
           label: "Freezers ativos",
           value: String(activeFreezers),
-          valueColor: activeFreezers === 0 ? "text-grey" : "text-success",
+          valueColor: activeFreezers === 0 ? "text-muted" : "text-success",
         }
       : {
           label: "Status do freezer",
@@ -99,7 +99,7 @@ export function useTemperature(freezerID: number | null) {
     {
       label: "Total de ordens de serviço",
       value: "0",
-      valueColor: "text-grey",
+      valueColor: "text-muted",
     },
   ];
 

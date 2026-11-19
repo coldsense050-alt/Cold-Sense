@@ -2,16 +2,16 @@
    interferir no restante do site. */
 
 .fa-pagina {
-  --fa-borda: var(--color-border-value, #e4e5e7);
-  --fa-texto: var(--color-body-value, #636675);
-  --fa-titulo: var(--color-heading-value, #0f172a);
-  --fa-fundo: var(--color-surface-value, #fff);
-  --fa-suave: var(--color-page-value, #f6f7f9);
-  --fa-acento: var(--color-primary-value, #006ecf);
+  --fa-borda: var(--color-border);
+  --fa-texto: var(--color-body);
+  --fa-titulo: var(--color-heading);
+  --fa-fundo: var(--color-surface);
+  --fa-suave: var(--color-page);
+  --fa-acento: var(--color-primary);
   --fa-ok: #2f9e44;
-  --fa-atencao: var(--color-warning-value, #d97706);
+  --fa-atencao: var(--color-warning);
   --fa-critico: #dc2626;
-  --fa-info: var(--color-secondary-value, #52647a);
+  --fa-info: var(--color-secondary);
   font-size: 0.875rem;
   display: flex;
   flex-direction: column;

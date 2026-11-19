@@ -1,32 +1,31 @@
-# React + TypeScript + Vite
+# ColdSense — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Dashboard de monitoramento de refrigeração com React, TypeScript, Vite e Supabase.
 
-Currently, two official plugins are available:
+## Executar
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. Instale as dependências com `npm install`.
+2. Copie `.env.example` para `.env.local` e preencha `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` com os valores do seu projeto Supabase. Um arquivo `.env` existente também é aceito pelo Vite.
+3. Execute `npm run dev`.
 
-## React Compiler
+Use somente a chave publicável (ou a chave legada `anon`) no frontend. A chave `service_role` é exclusiva do backend.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Login
 
-## Expanding the Oxlint configuration
+- O acesso usa e-mail e senha de um usuário existente no Supabase Auth. Crie os usuários pelo painel do Supabase em **Authentication → Users → Add user**, com o e-mail confirmado.
+- Não há cadastro público. No projeto Supabase hospedado, desative **Allow new users to sign up** nas configurações de Authentication. O `supabase/config.toml` já desativa o cadastro no ambiente local.
+- Visitantes sem sessão são direcionados para `/login` antes de qualquer consulta do dashboard. `/` e `/freezer-ai` exigem autenticação.
+- Após o login, o usuário volta à página que tentou acessar. A sessão é persistida e renovada pelo Supabase; ao sair, o cache de dados é limpo e as páginas protegidas voltam a exigir login.
+- Usuários autenticados que acessam `/login` são direcionados ao dashboard.
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+A proteção das rotas controla a interface. Para restringir também consultas diretas ao banco, habilite RLS nas tabelas e permita leitura apenas ao papel `authenticated`. As políticas do projeto Supabase hospedado são administradas separadamente deste frontend.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+## Tema visual
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+A paleta do login é o tema global do Tailwind, definido em `src/index.css` com `@theme`. Use as cores semânticas `secondary` (azul escuro), `accent` (menta), `primary` (azul), `surface`, `heading`, `body`, `muted` e `border` nos componentes.
+
+A tela de login usa somente classes utilitárias do Tailwind, incluindo os estados de foco, carregamento e erro. A variante `compact:` adapta o layout a telas de desktop com pouca altura.
+
+## Verificação
+
+Execute `npm run build` para verificar os tipos e gerar a versão de produção.

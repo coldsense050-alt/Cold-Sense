@@ -1,16 +1,22 @@
-import { BrowserRouter, Route, Routes } from "react-router";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 import RootLayout from "./layouts/RootLayout";
 import Dashboard from "./pages/Home";
 import FreezerAI from "./pages/FreezerAI";
+import Login from "./pages/Login";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<RootLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="freezer-ai" element={<FreezerAI />} />
+        <Route path="/login" element={<Login />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<RootLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="freezer-ai" element={<FreezerAI />} />
+          </Route>
         </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
