@@ -1,69 +1,38 @@
 @import "tailwindcss";
 
 @theme {
-  --color-page: var(--color-page-value);
-  --color-surface: var(--color-surface-value);
-  --color-border: var(--color-border-value);
-  --color-heading: var(--color-heading-value);
-  --color-body: var(--color-body-value);
-  --color-muted: var(--color-muted-value);
-  --color-primary: var(--color-primary-value);
-  --color-primary-soft: var(--color-primary-soft-value);
-  --color-secondary: var(--color-secondary-value);
-  --color-success: var(--color-success-value);
-  --color-warning: var(--color-warning-value);
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+
+  --color-page: #edf2f7;
+  --color-surface: #ffffff;
+  --color-border: #d7e0e9;
+  --color-border-soft: #e7edf3;
+  --color-border-hover: #a9bccf;
+  --color-heading: #263e54;
+  --color-body: #334a60;
+  --color-muted: #607489;
+  --color-placeholder: #7b8b9b;
+  --color-primary: #006ecf;
+  --color-primary-hover: #005bb0;
+  --color-primary-soft: #f0f7fd;
+  --color-secondary: #263e54;
+  --color-accent: #9ce5e0;
+  --color-success: #73cc80;
+  --color-warning: #d97706;
+  --color-danger: #a32929;
+  --color-danger-soft: #fff5f5;
+  --color-danger-border: #fecaca;
+
+  --shadow-login: 0 2rem 5rem -1.5rem rgb(8 26 44 / 60%),
+    0 0.25rem 1rem rgb(8 26 44 / 15%);
+  --shadow-frost: 0 0 0 1rem rgb(156 229 224 / 2.5%),
+    0 0 0 2rem rgb(156 229 224 / 1.5%);
 }
 
-:root {
-  .Paleta-colores-SB-2026-ok-1-hex {
-    color: #2d3f54;
-  }
-  .Paleta-colores-SB-2026-ok-2-hex {
-    color: #52647a;
-  }
-  .Paleta-colores-SB-2026-ok-3-hex {
-    color: #73cc80;
-  }
-  .Paleta-colores-SB-2026-ok-4-hex {
-    color: #004c94;
-  }
-  .Paleta-colores-SB-2026-ok-5-hex {
-    color: #006ecf;
-  }
-  .Paleta-colores-SB-2026-ok-6-hex {
-    color: #3c93fa;
-  }
-  .Paleta-colores-SB-2026-ok-7-hex {
-    color: #00d4c6;
-  }
-  .Paleta-colores-SB-2026-ok-8-hex {
-    color: #0fa69d;
-  }
-  .Paleta-colores-SB-2026-ok-9-hex {
-    color: #028183;
-  }
-
-  --color-page-value: #ebeff3;
-  --color-surface-value: #ffffff;
-  --color-border-value: #939ca748;
-  --color-heading-value: #0f172a;
-  --color-body-value: #27303b;
-  --color-muted-value: #658c97;
-  --color-primary-value: #006ecf;
-  --color-primary-soft-value: #3c93fa;
-  --color-secondary-value: #52647a;
-  --color-secondary-dark: #2d3f54;
-  --color-success-value: #73cc80;
-  --color-warning-value: #d97706;
-}
+@custom-variant compact (@media (min-width: 48rem) and (max-height: 50rem));
 
 body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background: var(--color-page-value);
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  color: var(--color-heading-value);
+  @apply m-0 min-h-screen min-w-80 bg-page font-sans text-heading;
 }
 
 @media (min-width: 48rem) {
