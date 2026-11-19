@@ -88,7 +88,9 @@ export default function Login() {
   if (isLoading) return <AuthLoading />;
 
   if (session) {
-    const destination = location.state?.from === "/freezer-ai" ? "/freezer-ai" : "/";
+    const destination = ["/freezer-ai", "/prestadores"].includes(location.state?.from)
+      ? location.state.from
+      : "/";
     return <Navigate to={destination} replace />;
   }
 

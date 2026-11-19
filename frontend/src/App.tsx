@@ -4,6 +4,7 @@ import RootLayout from "./layouts/RootLayout";
 import Dashboard from "./pages/Home";
 import FreezerAI from "./pages/FreezerAI";
 import Login from "./pages/Login";
+import Prestadores from "./features/prestadores";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
           <Route path="/" element={<RootLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="freezer-ai" element={<FreezerAI />} />
+            <Route path="prestadores" element={<Prestadores />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
