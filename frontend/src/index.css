@@ -51,10 +51,9 @@ body {
   .dashboard-grid {
     min-height: 0;
     flex: 1;
-  }
-
-  .dashboard-scroll {
-    height: 100%;
     overflow-y: auto;
+    scrollbar-gutter: stable;
+    padding-right: 0.5rem;
+    padding-bottom: 0.25rem;
   }
 }

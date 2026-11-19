@@ -41,7 +41,7 @@ export function getTemperatureHighlights(
   const maximumIndicator = {
     label: "Temperatura máxima",
     value: temperatureValue(maximum?.temperatura),
-    valueColor: "text-primary",
+    valueColor: "text-secondary",
     collectedAt: maximum?.coletado_em,
     collectedAtLabel: "Registrado em",
   };
@@ -66,6 +66,14 @@ export function getTemperatureHighlights(
 
   return [
     { ...maximumIndicator, assessment: assessTemperature(maximum?.temperatura, freezer) },
+    {
+      label: "Temperatura mínima",
+      value: temperatureValue(minimum?.temperatura),
+      valueColor: "text-secondary",
+      assessment: assessTemperature(minimum?.temperatura, freezer),
+      collectedAt: minimum?.coletado_em,
+      collectedAtLabel: "Registrado em",
+    },
     {
       label: "Temperatura média",
       value: temperatureValue(average),

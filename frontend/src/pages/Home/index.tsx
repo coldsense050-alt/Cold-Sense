@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import EmptyState from "../../components/dashboard/EmptyState";
 import FilterBar from "../../components/dashboard/FilterBar";
 import FreezerReadings from "../../components/dashboard/FreezerReadings";
@@ -10,19 +10,52 @@ import { useTemperature } from "../../hooks/useTemperature";
 import type { TemperaturePeriod } from "../../types/temperature";
 import type { TemperatureChartMetric } from "../../utils/temperatureChart";
 
-const TemperatureBarChart = lazy(() => import("../../components/dashboard/TemperatureBarChart"));
+const TemperatureBarChart = lazy(
+  () => import("../../components/dashboard/TemperatureBarChart"),
+);
 
 export default function Dashboard() {
   const [freezerId, setFreezerId] = useState("all");
   const [period, setPeriod] = useState<TemperaturePeriod>("24h");
-  const [chartMetric, setChartMetric] = useState<TemperatureChartMetric>("maximum");
+  const [chartMetric, setChartMetric] =
+    useState<TemperatureChartMetric>("maximum");
   const selectedFreezerId = freezerId === "all" ? null : Number(freezerId);
   const freezerQuery = useFreezer();
-  const { data: temperatures = [], indicators, isError, isPending, error, isFetching, refetch } =
-    useTemperature(selectedFreezerId, period, freezerQuery.data);
-  const selectedFreezers = selectedFreezerId === null
-    ? freezerQuery.data
-    : freezerQuery.data.filter((freezer) => freezer.id === selectedFreezerId);
+  const {
+    data: temperatures = [],
+    indicators,
+    isError,
+    isPending,
+    error,
+    isFetching,
+    refetch,
+  } = useTemperature(selectedFreezerId, period, freezerQuery.data);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const metricsRef = useRef<HTMLElement>(null);
+  const [metricsStickyTop, setMetricsStickyTop] = useState(0);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    const metrics = metricsRef.current;
+    if (!container || !metrics) return;
+
+    const updateMetricsPosition = () => {
+      const bottomPadding =
+        parseFloat(getComputedStyle(container).paddingBottom) || 0;
+      setMetricsStickyTop(
+        Math.min(
+          0,
+          container.clientHeight - bottomPadding - metrics.offsetHeight,
+        ),
+      );
+    };
+    updateMetricsPosition();
+
+    const observer = new ResizeObserver(updateMetricsPosition);
+    observer.observe(container);
+    observer.observe(metrics);
+    return () => observer.disconnect();
+  }, [isPending, isError]);
 
   function refreshDashboard() {
     void refetch();
@@ -30,8 +63,8 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="dashboard-page space-y-2 lg:flex lg:flex-col lg:space-y-0">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:shrink-0 lg:pb-2">
+    <div className="dashboard-page flex flex-col gap-2">
+      <header className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-2xl font-bold text-secondary">Dashboard</h2>
         <FilterBar
           freezerId={freezerId}
@@ -47,7 +80,8 @@ export default function Dashboard() {
 
       {freezerQuery.isError && (
         <p className="text-sm text-danger" role="alert">
-          Não foi possível carregar a lista de freezers. Use Atualizar dados para tentar novamente.
+          Não foi possível carregar a lista de freezers. Use Atualizar dados
+          para tentar novamente.
         </p>
       )}
 
@@ -90,8 +124,16 @@ export default function Dashboard() {
           </div>
         </div>
       ) : (
-        <div className="dashboard-grid grid items-start gap-5 md:grid-cols-[13rem_minmax(0,1fr)]">
-          <section className="min-h-0 md:h-full md:overflow-y-auto md:pr-1" aria-label="Métricas gerais">
+        <div
+          ref={scrollContainerRef}
+          className="dashboard-grid grid items-start gap-5 md:grid-cols-[13rem_minmax(0,1fr)]"
+        >
+          <section
+            ref={metricsRef}
+            className="min-w-0 self-start md:sticky"
+            style={{ top: metricsStickyTop }}
+            aria-label="Métricas gerais"
+          >
             <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-1">
               {indicators.map((indicator) => (
                 <MetricCard key={indicator.label} {...indicator} />
@@ -99,35 +141,56 @@ export default function Dashboard() {
             </div>
           </section>
 
-          <div className="dashboard-scroll space-y-6 md:pr-2">
-            <Suspense fallback={
-              <SectionCard title="Gráfico de temperaturas" titleId="temperature-chart-loading">
-                <div className="flex h-72 items-center justify-center text-sm text-muted" role="status">Carregando gráfico...</div>
-              </SectionCard>
-            }>
-              <TemperatureBarChart temperatures={temperatures} period={period} metric={chartMetric} onMetricChange={setChartMetric} />
-            </Suspense>
-            <SectionCard
-              title="Registros de temperaturas"
-              titleId="readings-heading"
-            >
-              <TemperatureReadings key={`${freezerId}:${period}`} temperatures={temperatures} freezers={freezerQuery.data} />
-            </SectionCard>
-
-            <div className="grid gap-6 md:grid-cols-2">
+          <div className="min-w-0 space-y-6">
+            {selectedFreezerId === null && (
               <SectionCard title="Freezers" titleId="freezers-heading">
                 <FreezerReadings
-                  freezers={selectedFreezers}
+                  freezers={freezerQuery.data}
                   temperatures={temperatures}
                   isPending={freezerQuery.isPending}
                   isError={freezerQuery.isError}
                 />
               </SectionCard>
+            )}
 
-              <SectionCard title="Ordens de serviço" titleId="oc-heading">
-                <EmptyState message="Nenhuma ordem de serviço criada." />
-              </SectionCard>
-            </div>
+            {selectedFreezerId !== null && (
+              <Suspense
+                fallback={
+                  <SectionCard
+                    title="Gráfico de temperaturas"
+                    titleId="temperature-chart-loading"
+                  >
+                    <div
+                      className="flex h-72 items-center justify-center text-sm text-muted"
+                      role="status"
+                    >
+                      Carregando gráfico...
+                    </div>
+                  </SectionCard>
+                }
+              >
+                <TemperatureBarChart
+                  temperatures={temperatures}
+                  period={period}
+                  metric={chartMetric}
+                  onMetricChange={setChartMetric}
+                />
+              </Suspense>
+            )}
+            <SectionCard
+              title="Registros de temperaturas"
+              titleId="readings-heading"
+            >
+              <TemperatureReadings
+                key={`${freezerId}:${period}`}
+                temperatures={temperatures}
+                freezers={freezerQuery.data}
+              />
+            </SectionCard>
+
+            <SectionCard title="Ordens de serviço" titleId="oc-heading">
+              <EmptyState message="Nenhuma ordem de serviço criada." />
+            </SectionCard>
           </div>
         </div>
       )}
