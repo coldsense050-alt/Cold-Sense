@@ -1,4 +1,5 @@
 import { NavLink } from "react-router";
+import Icon from "./ui/Icon";
 
 function IconMain() {
   return (
@@ -41,7 +42,7 @@ const linkClasses = ({ isActive }: { isActive: boolean }) =>
 
 export default function Navbar() {
   return (
-    <nav aria-label="Navegação principal" className="flex gap-1 md:flex-col">
+    <nav aria-label="Navegação principal" className="flex flex-wrap gap-1 md:flex-col">
       <NavLink to="/" end className={linkClasses}>
         <IconMain />
         Dashboard
@@ -49,6 +50,10 @@ export default function Navbar() {
       <NavLink to="/freezer-ai" className={linkClasses} title="Relatórios inteligentes da Freezer AI">
         <IconFreezerAI />
         Freezer AI
+      </NavLink>
+      <NavLink to="/prestadores" className={linkClasses}>
+        <Icon name="users" />
+        Prestadores
       </NavLink>
     </nav>
   );
