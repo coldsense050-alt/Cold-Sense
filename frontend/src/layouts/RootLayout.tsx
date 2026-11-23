@@ -1,12 +1,17 @@
-import { useState } from "react";
-import { Outlet } from "react-router";
+import { useEffect, useState } from "react";
+import { Outlet, useLocation } from "react-router";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../hooks/useAuth";
 
 export default function RootLayout() {
+  const { pathname } = useLocation();
   const { session, signOut } = useAuth();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState<string | null>(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
 
   async function handleSignOut() {
     if (isSigningOut) return;

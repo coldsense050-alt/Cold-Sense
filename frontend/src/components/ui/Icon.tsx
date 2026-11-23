@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-type IconName = "plus" | "search" | "chevron" | "edit" | "trash" | "close" | "users" | "freezer";
+type IconName = "plus" | "search" | "chevron" | "edit" | "trash" | "close" | "users" | "freezer" | "refresh";
 
 const paths: Record<IconName, ReactNode> = {
   plus: <path d="M12 5v14M5 12h14" />,
@@ -10,7 +10,8 @@ const paths: Record<IconName, ReactNode> = {
   trash: <><path d="M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6" /></>,
   close: <path d="m6 6 12 12M18 6 6 18" />,
   users: <><circle cx="9" cy="7" r="3" /><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6M21 21v-3a6 6 0 0 0-4-5.65" /></>,
-  freezer: <><path d="M12 2v20M3.5 7l17 10M3.5 17l17-10M9 4l3 3 3-3M9 20l3-3 3 3" /></>,
+  freezer: <><rect x="5" y="2" width="14" height="19" rx="2" /><path d="M5 9h14M8 5v1M8 12v4M8 21v1M16 21v1" /></>,
+  refresh: <><path d="M20 7v5h-5M4 17v-5h5" /><path d="M6 7a7 7 0 0 1 11-2l3 3M4 16l3 3a7 7 0 0 0 11-2" /></>,
 };
 
 export default function Icon({ name, className = "size-5" }: { name: IconName; className?: string }) {

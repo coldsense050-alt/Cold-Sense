@@ -9,8 +9,10 @@ export default function ProtectedRoute() {
   if (isLoading) return <AuthLoading />;
 
   if (!session) {
+    const from = `${location.pathname}${location.search}${location.hash}`;
+
     return (
-      <Navigate to="/login" replace state={{ from: location.pathname }} />
+      <Navigate to="/login" replace state={{ from }} />
     );
   }
 
