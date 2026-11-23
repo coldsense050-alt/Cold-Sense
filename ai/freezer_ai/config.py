@@ -96,6 +96,11 @@ class Config:
         default_factory=lambda: os.getenv("FREEZER_AI_COLUNA_DISPOSITIVO", "freezer_id") or None
     )
     tabela_freezers: str = field(default_factory=lambda: os.getenv("FREEZER_AI_TABELA_FREEZERS", "freezers"))
+    # Faixa recomendada cadastrada em cada freezer (tabela "freezers")
+    coluna_temp_min: str = field(default_factory=lambda: os.getenv("FREEZER_AI_COLUNA_TEMP_MIN", "temperatura_min"))
+    coluna_temp_max: str = field(default_factory=lambda: os.getenv("FREEZER_AI_COLUNA_TEMP_MAX", "temperatura_max"))
+    # Quantos °C acima da máxima recomendada a situação passa a ser crítica
+    margem_critica: float = field(default_factory=lambda: float(os.getenv("FREEZER_AI_MARGEM_CRITICA", "3")))
 
 
 # Valores que o DS18B20 devolve quando há erro (não são temperaturas reais)
@@ -104,3 +109,35 @@ CODIGOS_ERRO_SENSOR = {
     -127.0: "sensor desconectado (-127 °C)",
 }
 FAIXA_FISICA_SENSOR = (-55.0, 125.0)  # faixa de medição do DS18B20
+
+
+def perfil_do_freezer(freezer: dict, config: Optional["Config"] = None) -> Optional[Perfil]:
+    """Monta o perfil a partir da faixa cadastrada no freezer (temperatura_min/max).
+
+    Regras:
+      - faixa ideal = mínima a máxima cadastradas;
+      - alerta      = acima da máxima ou abaixo da mínima;
+      - crítico     = acima da máxima + margem_critica (padrão 3 °C).
+    Devolve None se o freezer não tiver a faixa cadastrada (usa-se o perfil padrão).
+    """
+    config = config or Config()
+    tmin = freezer.get(config.coluna_temp_min)
+    tmax = freezer.get(config.coluna_temp_max)
+    try:
+        tmin, tmax = float(tmin), float(tmax)
+    except (TypeError, ValueError):
+        return None
+    if tmin >= tmax:
+        return None
+    base = PERFIS["refrigerador"] if tmax > 0 else PERFIS["freezer"]
+    nome = freezer.get("nome") or f"Freezer {freezer.get('id')}"
+    return replace(
+        base,
+        nome="cadastro",
+        descricao=nome,
+        ideal_min=tmin,
+        ideal_max=tmax,
+        limite_alerta=tmax,
+        limite_critico=tmax + config.margem_critica,
+        limite_minimo_alerta=tmin,
+    )

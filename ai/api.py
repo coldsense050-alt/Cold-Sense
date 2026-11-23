@@ -7,25 +7,29 @@ o relatório em JSON.
 Rodar localmente (dentro da pasta ai/):
     uvicorn api:app --reload --port 8000
 
-Variáveis de ambiente (arquivo ai/.env):
-    SUPABASE_URL, SUPABASE_KEY          -> acesso de leitura ao banco
+Variáveis de ambiente (arquivo ai/.env) – veja ai/.env.example:
+    SUPABASE_URL, SUPABASE_KEY          -> acesso ao banco (use a chave secret: a API roda no servidor)
     FREEZER_AI_CORS_ORIGINS             -> endereços do site autorizados (separados por vírgula)
     FREEZER_AI_FONTE=simulacao          -> (opcional) usa dados simulados, para testar sem banco
+    FREEZER_AI_MONITOR=0                -> (opcional) desliga o vigia automático de alertas
+    SMTP_USUARIO, SMTP_SENHA            -> conta que envia os e-mails de alerta (Gmail + senha de app)
 """
 
 from __future__ import annotations
 
 import os
+from contextlib import asynccontextmanager
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from typing import Literal, Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Body, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from freezer_ai import __version__, analisar_dataframe
-from freezer_ai.config import PERFIS, Config
+from freezer_ai.alertas import Monitor
+from freezer_ai.config import PERFIS, Config, perfil_do_freezer
 from freezer_ai.simulador import CENARIOS
 
 load_dotenv()
@@ -38,10 +42,26 @@ HISTORICO_EXTRA_DIAS = 7      # dias antes do período usados como "padrão" do 
 FONTE = os.getenv("FREEZER_AI_FONTE", "supabase").strip().lower()
 origens = [o.strip() for o in os.getenv("FREEZER_AI_CORS_ORIGINS", "http://localhost:5173").split(",") if o.strip()]
 
-app = FastAPI(title="Freezer AI", version=__version__, description="Análise inteligente do Cold-Sense")
-app.add_middleware(CORSMiddleware, allow_origins=origens, allow_methods=["GET"], allow_headers=["*"])
-
 _fonte_supabase = None
+MONITOR_LIGADO = os.getenv("FREEZER_AI_MONITOR", "1").strip() not in ("0", "false", "nao", "não")
+monitor: Optional[Monitor] = None
+
+
+@asynccontextmanager
+async def ciclo_de_vida(_app: FastAPI):
+    global monitor
+    monitor = Monitor(_supabase, simulacao=(FONTE == "simulacao"))
+    if MONITOR_LIGADO:
+        monitor.iniciar()
+        print(f"[freezer-ai] vigia de alertas ligado (a cada {monitor.intervalo_s:.0f} s). "
+              f"E-mail {'configurado' if monitor.email.configurado else 'NÃO configurado'}.")
+    yield
+    monitor.parar()
+
+
+app = FastAPI(title="Freezer AI", version=__version__, description="Análise inteligente do Cold-Sense",
+              lifespan=ciclo_de_vida)
+app.add_middleware(CORSMiddleware, allow_origins=origens, allow_methods=["GET", "POST"], allow_headers=["*"])
 
 
 def _supabase():
@@ -120,10 +140,77 @@ def relatorio(
         print(f"[freezer-ai] erro ao buscar dados: {type(erro).__name__}: {erro}")
         raise HTTPException(502, "Não foi possível buscar as leituras no banco de dados.") from None
 
+    # Faixa recomendada cadastrada no freezer (temperatura_min / temperatura_max)
+    cadastro = None
+    if freezer_id is not None and FONTE != "simulacao":
+        try:
+            cadastro = _supabase().freezer(freezer_id)
+        except Exception as erro:  # noqa: BLE001
+            print(f"[freezer-ai] não foi possível ler o cadastro do freezer {freezer_id}: {erro}")
+    elif FONTE == "simulacao":
+        cadastro = {"id": 1, "nome": "Freezer simulado", "temperatura_min": -25.0, "temperatura_max": -10.0}
+    perfil_usado = (perfil_do_freezer(cadastro) if cadastro else None) or perfil
+
     try:
-        return analisar_dataframe(
-            df, perfil, config, agora=fim, fonte=origem, tempo_real=tempo_real, resolucao=resolucao,
+        rel = analisar_dataframe(
+            df, perfil_usado, config, agora=fim, fonte=origem, tempo_real=tempo_real, resolucao=resolucao,
             limite_alerta=alerta, limite_critico=critico,
         )
     except ValueError as erro:
         raise HTTPException(422, str(erro)) from None
+    rel["equipamento"]["origem_limites"] = "cadastro" if perfil_usado is not perfil else "padrao"
+    if alerta is not None or critico is not None:
+        rel["equipamento"]["origem_limites"] = "manual"
+    if cadastro:
+        rel["equipamento"].update({k: cadastro.get(k) for k in ("nome", "localizacao", "marca", "modelo")})
+    return rel
+
+
+# --------------------------------------------------------------------------- #
+# Alertas automáticos
+# --------------------------------------------------------------------------- #
+def _monitor() -> Monitor:
+    if monitor is None:
+        raise HTTPException(503, "O vigia de alertas ainda não foi iniciado.")
+    return monitor
+
+
+@app.get("/alertas")
+def listar_alertas():
+    """Alertas ativos, histórico recente e situação do vigia (o site consulta a cada 30 s)."""
+    return _monitor().estado()
+
+
+@app.post("/alertas/verificar")
+def verificar_agora():
+    """Roda uma verificação imediata (sem esperar o próximo ciclo)."""
+    return _monitor().verificar()
+
+
+@app.post("/alertas/{alerta_id}/ciente")
+def marcar_ciente(alerta_id: str, dados: dict = Body(default={})):
+    alerta = _monitor().marcar_ciente(alerta_id, dados.get("por"))
+    if alerta is None:
+        raise HTTPException(404, "Alerta não encontrado ou já encerrado.")
+    return alerta
+
+
+@app.post("/alertas/teste-email")
+def teste_email():
+    """Envia um e-mail de teste para a própria conta remetente (e para as cópias configuradas)."""
+    try:
+        return _monitor().enviar_teste()
+    except Exception as erro:  # noqa: BLE001
+        raise HTTPException(502, f"Falha no envio: {erro}") from None
+
+
+@app.post("/alertas/simular")
+def simular(cenario: str = Query(..., description="Cenário do simulador")):
+    """Só no modo simulação: troca o cenário que o vigia está observando."""
+    m = _monitor()
+    if not m.simulacao:
+        raise HTTPException(400, "Disponível apenas com FREEZER_AI_FONTE=simulacao.")
+    if cenario not in CENARIOS:
+        raise HTTPException(422, f"Cenário inválido. Opções: {', '.join(CENARIOS)}")
+    m.definir_cenario(cenario)
+    return m.verificar()

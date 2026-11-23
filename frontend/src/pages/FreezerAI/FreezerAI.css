@@ -171,3 +171,10 @@
   .fa-painel, .fa-cartao, .fa-achado { break-inside: avoid; }
   .fa-achado details { display: none; }
 }
+
+/* Monitoramento automático */
+.fa-monitor-detalhe { margin: 4px 0 0; font-size: .8rem; color: var(--fa-texto); }
+.fa-monitor-ok { margin: 12px 0 0; color: var(--fa-ok); font-weight: 600; }
+.fa-titulo-com-filtro .fa-status-api { font-size: .7rem; font-weight: 600; margin-left: 6px; vertical-align: middle; }
+.fa-pagina .fa-botao-pequeno { margin-top: 8px; padding: 4px 12px; font-size: .78rem; background: var(--fa-acento); color: #fff; border-color: var(--fa-acento); }
+.fa-faixa-txt { display: block; font-size: .8rem; margin-top: 2px; }

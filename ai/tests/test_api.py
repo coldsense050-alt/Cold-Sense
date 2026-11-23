@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 @pytest.fixture()
 def cliente(monkeypatch):
     monkeypatch.setenv("FREEZER_AI_FONTE", "simulacao")
+    monkeypatch.setenv("FREEZER_AI_MONITOR", "0")
     import api
     importlib.reload(api)
     return TestClient(api.app)
@@ -53,3 +54,25 @@ def test_periodo_passado(cliente):
 ])
 def test_validacoes(cliente, params):
     assert cliente.get("/relatorio", params=params).status_code == 422
+
+
+def test_rotas_de_alertas(monkeypatch):
+    monkeypatch.setenv("FREEZER_AI_FONTE", "simulacao")
+    monkeypatch.setenv("FREEZER_AI_MONITOR", "0")  # não sobe a thread; verificações manuais
+    monkeypatch.delenv("SMTP_USUARIO", raising=False)
+    import api
+    importlib.reload(api)
+    with TestClient(api.app) as c:
+        estado = c.get("/alertas").json()
+        assert estado["ativos"] == [] and estado["monitor"]["simulacao"] is True
+        estado = c.post("/alertas/simular", params={"cenario": "falha_refrigeracao"}).json()
+        alerta = estado["ativos"][0]
+        assert alerta["nivel"] == "critico"
+        r = c.post(f"/alertas/{alerta['id']}/ciente", json={"por": "alan@exemplo.com"})
+        assert r.status_code == 200 and r.json()["ciente"] is True
+        assert c.post("/alertas/xyz/ciente", json={}).status_code == 404
+        assert c.post("/alertas/teste-email").status_code == 502  # e-mail não configurado
+        # o relatório do freezer usa a faixa do cadastro
+        rel = c.get("/relatorio", params={"cenario": "normal"}).json()
+        assert rel["equipamento"]["origem_limites"] == "cadastro"
+        assert rel["equipamento"]["faixa_ideal"] == [-25.0, -10.0]
