@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 @pytest.fixture()
 def cliente(monkeypatch):
     monkeypatch.setenv("FREEZER_AI_FONTE", "simulacao")
+    monkeypatch.setenv("FREEZER_AI_MONITOR", "0")
     import api
     importlib.reload(api)
     return TestClient(api.app)
@@ -53,3 +54,57 @@ def test_periodo_passado(cliente):
 ])
 def test_validacoes(cliente, params):
     assert cliente.get("/relatorio", params=params).status_code == 422
+
+
+def test_rotas_de_alertas(monkeypatch):
+    monkeypatch.setenv("FREEZER_AI_FONTE", "simulacao")
+    monkeypatch.setenv("FREEZER_AI_MONITOR", "0")  # não sobe a thread; verificações manuais
+    monkeypatch.delenv("SMTP_USUARIO", raising=False)
+    import api
+    importlib.reload(api)
+    with TestClient(api.app) as c:
+        estado = c.get("/alertas").json()
+        assert estado["ativos"] == [] and estado["monitor"]["simulacao"] is True
+        estado = c.post("/alertas/simular", params={"cenario": "falha_refrigeracao"}).json()
+        alerta = estado["ativos"][0]
+        assert alerta["nivel"] == "critico"
+        r = c.post(f"/alertas/{alerta['id']}/ciente", json={"por": "alan@exemplo.com"})
+        assert r.status_code == 200 and r.json()["ciente"] is True
+        assert c.post("/alertas/xyz/ciente", json={}).status_code == 404
+        assert c.post("/alertas/teste-email").status_code == 502  # e-mail não configurado
+        # o relatório do freezer usa a faixa do cadastro
+        rel = c.get("/relatorio", params={"cenario": "normal"}).json()
+        assert rel["equipamento"]["origem_limites"] == "cadastro"
+        assert rel["equipamento"]["faixa_ideal"] == [-25.0, -10.0]
+
+
+def test_enviar_relatorio_por_email(monkeypatch):
+    monkeypatch.setenv("FREEZER_AI_FONTE", "simulacao")
+    monkeypatch.setenv("FREEZER_AI_MONITOR", "0")
+    monkeypatch.setenv("FREEZER_AI_EMAIL_COPIA", "manutencao@exemplo.com")
+    import api
+    importlib.reload(api)
+
+    class FonteFalsa:
+        def prestadores_ativos(self):
+            return [{"id": 1, "nome": "Refrigeração Polar", "email": "Polar@Exemplo.com", "ativo": True}]
+
+    with TestClient(api.app) as c:
+        enviados = []
+        api.monitor.email.usuario, api.monitor.email.senha = "alertas@exemplo.com", "x"
+        api.monitor.email.enviar = lambda para, assunto, texto, html: enviados.append((para, assunto, texto, html))
+        monkeypatch.setattr(api, "_supabase", lambda: FonteFalsa())
+        rel = c.get("/relatorio", params={"cenario": "falha_refrigeracao"}).json()
+
+        r = c.post("/relatorio/enviar", json={"relatorio": rel, "para": ["polar@exemplo.com"],
+                                              "mensagem": "Favor verificar hoje.", "enviado_por": "alan@exemplo.com"})
+        assert r.status_code == 200, r.text
+        para, assunto, texto, html = enviados[0]
+        assert para == ["polar@exemplo.com"]
+        assert assunto.startswith("[Cold-Sense] Relatório – Freezer simulado")
+        assert "Favor verificar hoje." in texto and "Recomendações" in html
+
+        # não envia para quem não está cadastrado
+        r = c.post("/relatorio/enviar", json={"relatorio": rel, "para": ["estranho@exemplo.com"]})
+        assert r.status_code == 422 and "não cadastrado" in r.json()["detail"]
+        assert c.post("/relatorio/enviar", json={"relatorio": rel, "para": []}).status_code == 422

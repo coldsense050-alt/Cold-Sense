@@ -1,32 +1,26 @@
 import { useQuery } from "@tanstack/react-query";
 import { getTemperatures } from "../services/temperatureService";
-import type { Temperature } from "../types/temperature";
-import { formatNumber } from "../utils/formatNumber";
+import type { Freezer } from "../types/freezer";
+import type { Temperature, TemperaturePeriod } from "../types/temperature";
+import { getTemperatureHighlights } from "../utils/temperatureHighlights";
 
-export function useTemperature(freezerID: number | null) {
+export function useTemperature(freezerID: number | null, period: TemperaturePeriod, freezers: Freezer[]) {
   const temperatureQ = useQuery<Temperature[], Error>({
-    queryKey: ["temperatures", freezerID],
-    queryFn: () => getTemperatures(freezerID),
+    queryKey: ["temperatures", freezerID, period],
+    queryFn: ({ signal }) => getTemperatures(freezerID, period, signal),
   });
 
   const temperatures = temperatureQ.data;
+  const updatedAt = temperatureQ.dataUpdatedAt;
 
   const lastReading = temperatures?.[0];
-
-  const currentTemperature = lastReading?.temperatura;
-
-  const averageTemperature =
-    temperatures && temperatures.length > 0
-      ? temperatures.reduce((total, item) => total + item.temperatura, 0) /
-        temperatures.length
-      : undefined;
 
   const lastReadingTime = lastReading
     ? new Date(lastReading.coletado_em).getTime()
     : undefined;
 
-  const minutesSinceLastReading = lastReadingTime
-    ? (Date.now() - lastReadingTime) / 60_000
+  const minutesSinceLastReading = lastReadingTime !== undefined
+    ? (updatedAt - lastReadingTime) / 60_000
     : undefined;
 
   const connectionStatus =
@@ -54,7 +48,7 @@ export function useTemperature(freezerID: number | null) {
   });
 
   const activeFreezers = Array.from(latestReadingByFreezer.values()).filter(
-    (readingTime) => (Date.now() - readingTime) / 60_000 <= 10,
+    (readingTime) => (updatedAt - readingTime) / 60_000 <= 10,
   ).length;
 
   const freezerStatusIndicator =
@@ -73,28 +67,12 @@ export function useTemperature(freezerID: number | null) {
               : connectionStatus === "Instável"
                 ? "text-warning"
                 : "text-red-600",
-          description: lastReading
-            ? `Última leitura: ${new Date(lastReading.coletado_em).toLocaleString("pt-BR")}`
-            : "Nenhuma leitura recebida",
+          collectedAt: lastReading?.coletado_em,
+          description: lastReading ? undefined : "Nenhuma leitura recebida",
         };
 
   const indicators = [
-    {
-      label: "Temperatura atual",
-      value:
-        currentTemperature !== undefined
-          ? `${formatNumber(currentTemperature)} °C`
-          : "-- °C",
-      valueColor: "text-primary",
-    },
-    {
-      label: "Temperatura média",
-      value:
-        averageTemperature !== undefined
-          ? `${formatNumber(averageTemperature)} °C`
-          : "-- °C",
-      valueColor: "text-secondary",
-    },
+    ...getTemperatureHighlights(temperatures ?? [], freezerID, freezers),
     freezerStatusIndicator,
     {
       label: "Total de ordens de serviço",

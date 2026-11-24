@@ -126,6 +126,40 @@ class SupabaseFonte:
         desde = datetime.now(timezone.utc) - timedelta(days=dias)
         return self.buscar(desde=desde, dispositivo=freezer_id)
 
+    def freezers(self) -> list[dict]:
+        """Lista os freezers cadastrados (com a faixa recomendada, se existir)."""
+        r = self._cliente.table(self.config.tabela_freezers).select("*").order("id").execute()
+        return r.data or []
+
+    def freezer(self, freezer_id: int) -> Optional[dict]:
+        r = (self._cliente.table(self.config.tabela_freezers).select("*")
+             .eq("id", freezer_id).limit(1).execute())
+        return (r.data or [None])[0]
+
+    def ultima_leitura(self, freezer_id: Optional[int] = None) -> Optional[datetime]:
+        cfg = self.config
+        consulta = self._cliente.table(cfg.tabela).select(cfg.coluna_data)
+        if freezer_id is not None and cfg.coluna_dispositivo:
+            consulta = consulta.eq(cfg.coluna_dispositivo, freezer_id)
+        r = consulta.order(cfg.coluna_data, desc=True).limit(1).execute()
+        if not r.data:
+            return None
+        return pd.to_datetime(r.data[0][cfg.coluna_data], utc=True, format="ISO8601").to_pydatetime()
+
+    def prestadores_do_freezer(self, freezer_id: int) -> list[dict]:
+        """Prestadores de manutenção ATIVOS ligados ao freezer (tabelas da tela de Prestadores)."""
+        r = (self._cliente.table("freezers_prestadores")
+             .select("prestador:prestadores_manutencao(id, nome, email, telefone, ativo)")
+             .eq("freezer_id", freezer_id).execute())
+        prestadores = [linha.get("prestador") for linha in (r.data or [])]
+        return [p for p in prestadores if p and p.get("ativo") and p.get("email")]
+
+    def prestadores_ativos(self) -> list[dict]:
+        """Todos os prestadores de manutenção ATIVOS que têm e-mail cadastrado."""
+        r = (self._cliente.table("prestadores_manutencao")
+             .select("id, nome, email, ativo").eq("ativo", True).execute())
+        return [p for p in (r.data or []) if p.get("email")]
+
     def nome_freezer(self, freezer_id: int) -> Optional[str]:
         try:
             r = (self._cliente.table(self.config.tabela_freezers).select("nome")

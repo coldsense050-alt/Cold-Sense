@@ -24,8 +24,8 @@ export default function PrestadoresTable({ prestadores, isLoading, error, hasFil
   return (
     <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-sm" aria-labelledby="prestadores-table-title">
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border-soft px-5 py-4">
-        <h3 id="prestadores-table-title" className="font-semibold text-heading">Prestadores cadastrados</h3>
-        {!isLoading && !error && <p className="text-sm text-muted" role="status">{prestadores.length} {prestadores.length === 1 ? "prestador encontrado" : "prestadores encontrados"}</p>}
+        <h3 id="prestadores-table-title" className="text-base font-semibold text-heading">Prestadores cadastrados</h3>
+        {!isLoading && !error && <p className="text-xs text-muted" role="status">{prestadores.length} {prestadores.length === 1 ? "prestador encontrado" : "prestadores encontrados"}</p>}
       </div>
 
       {isLoading ? (
@@ -50,7 +50,7 @@ export default function PrestadoresTable({ prestadores, isLoading, error, hasFil
           <div className="overflow-x-auto md:min-h-0 md:flex-1 md:overflow-auto">
             <table className="w-full min-w-192 border-collapse text-left text-sm">
               <caption className="sr-only">Prestadores de manutenção, contatos, freezers atendidos, status e ações.</caption>
-              <thead className="sticky top-0 z-10 bg-primary-soft text-muted">
+              <thead className="sticky top-0 z-10 bg-primary-soft text-xs text-muted">
                 <tr>
                   <th scope="col" className="px-5 py-3.5 font-medium">Prestador</th>
                   <th scope="col" className="px-4 py-3.5 font-medium">Contato</th>
@@ -76,7 +76,7 @@ export default function PrestadoresTable({ prestadores, isLoading, error, hasFil
                     <td className="min-w-48 max-w-64 px-4 py-5 align-top">
                       {prestador.freezers.length > 0 ? (
                         <ul className="flex flex-wrap gap-1.5" aria-label={`Freezers de ${prestador.nome}`}>
-                          {prestador.freezers.map((freezer) => <li key={freezer.id} className="rounded-md border border-border-soft bg-page/60 px-2 py-1 text-sm text-body">{freezer.nome}</li>)}
+                          {prestador.freezers.map((freezer) => <li key={freezer.id} className="rounded-md border border-border-soft bg-page/60 px-2 py-1 text-xs text-body">{freezer.nome}</li>)}
                         </ul>
                       ) : <span className="text-muted">Sem vínculo</span>}
                     </td>

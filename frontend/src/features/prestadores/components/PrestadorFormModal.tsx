@@ -16,8 +16,8 @@ interface PrestadorFormModalProps {
   isSaving: boolean;
 }
 
-const inputClasses = "min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-base text-heading outline-none placeholder:text-placeholder focus:border-primary focus:ring-3 focus:ring-primary/10 disabled:cursor-wait disabled:opacity-60";
-const labelClasses = "mb-2 block text-sm font-semibold text-body";
+const inputClasses = "min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-heading outline-none placeholder:text-placeholder focus:border-primary focus:ring-3 focus:ring-primary/10 disabled:cursor-wait disabled:opacity-60";
+const labelClasses = "mb-2 block text-xs font-semibold text-body";
 
 export default function PrestadorFormModal({ prestador, freezers, isLoadingFreezers, freezerError, onRetryFreezers, onSave, onClose, isSaving }: PrestadorFormModalProps) {
   const [nome, setNome] = useState(prestador?.nome ?? "");
@@ -84,7 +84,7 @@ export default function PrestadorFormModal({ prestador, freezers, isLoadingFreez
               </select>
               <Icon name="chevron" className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted" />
             </div>
-            <p id="prestador-freezers-help" className="mt-2 text-sm text-muted">Vínculo opcional. Você pode selecionar mais de um freezer.</p>
+            <p id="prestador-freezers-help" className="mt-2 text-xs text-muted">Vínculo opcional. Você pode selecionar mais de um freezer.</p>
             {freezerError && (
               <p className="mt-2 text-sm text-danger" role="alert">
                 Não foi possível carregar os freezers. <button type="button" className="cursor-pointer font-semibold underline underline-offset-2" onClick={onRetryFreezers}>Tentar novamente</button>
@@ -93,7 +93,7 @@ export default function PrestadorFormModal({ prestador, freezers, isLoadingFreez
             {selectedFreezers.length > 0 && (
               <ul className="mt-3 flex flex-wrap gap-2" aria-label="Freezers selecionados">
                 {selectedFreezers.map((freezer) => (
-                  <li key={freezer.id} className="flex max-w-full items-center gap-1 rounded-lg border border-primary/10 bg-primary-soft py-1 pr-1 pl-2.5 text-sm font-medium text-primary">
+                  <li key={freezer.id} className="flex max-w-full items-center gap-1 rounded-lg border border-primary/10 bg-primary-soft py-1 pr-1 pl-2.5 text-xs font-medium text-primary">
                     <Icon name="freezer" className="size-4 shrink-0" />
                     <span className="truncate" title={freezer.nome}>{freezer.nome}</span>
                     <button type="button" aria-label={`Desvincular ${freezer.nome}`} className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-wait" onClick={() => setSelectedFreezers((current) => current.filter((selected) => selected.id !== freezer.id))}>
@@ -107,7 +107,7 @@ export default function PrestadorFormModal({ prestador, freezers, isLoadingFreez
 
           <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border-soft bg-page/40 p-3">
             <input type="checkbox" className="size-4.5 shrink-0 accent-primary" checked={ativo} onChange={(event) => setAtivo(event.target.checked)} />
-            <span><span className="block text-sm font-semibold text-body">Prestador ativo</span><span className="mt-0.5 block text-sm text-muted">Disponível para novos atendimentos.</span></span>
+            <span><span className="block text-sm font-semibold text-body">Prestador ativo</span><span className="mt-0.5 block text-xs text-muted">Disponível para novos atendimentos.</span></span>
           </label>
         </fieldset>
 
