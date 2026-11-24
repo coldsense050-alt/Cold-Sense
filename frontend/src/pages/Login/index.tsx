@@ -4,6 +4,7 @@ import { isAuthError } from "@supabase/supabase-js";
 import { Navigate, useLocation } from "react-router";
 import AuthLoading from "../../components/auth/AuthLoading";
 import { useAuth } from "../../hooks/useAuth";
+import { getLoginDestination } from "../../utils/getLoginDestination";
 
 const inputClasses =
   "min-h-13 w-full rounded-xl border border-border bg-surface py-3 pl-11 text-base text-heading outline-none transition-[border-color,box-shadow] placeholder:text-placeholder hover:border-border-hover focus:border-primary focus:ring-3 focus:ring-primary/8 disabled:cursor-wait disabled:opacity-70 motion-reduce:transition-none";
@@ -88,9 +89,7 @@ export default function Login() {
   if (isLoading) return <AuthLoading />;
 
   if (session) {
-    const destination = ["/freezer-ai", "/prestadores"].includes(location.state?.from)
-      ? location.state.from
-      : "/";
+    const destination = getLoginDestination(location.state?.from, window.location.origin);
     return <Navigate to={destination} replace />;
   }
 

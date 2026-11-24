@@ -4,3 +4,5 @@ export type Freezer = {
   temperatura_min?: number | null;
   temperatura_max?: number | null;
 };
+
+export type FreezerInput = Pick<Freezer, "nome">;

@@ -5,6 +5,8 @@ import Dashboard from "./pages/Home";
 import FreezerAI from "./pages/FreezerAI";
 import Login from "./pages/Login";
 import Prestadores from "./features/prestadores";
+import Freezers from "./features/freezers";
+import FreezerDetailsPage from "./features/freezers/FreezerDetails";
 
 export default function App() {
   return (
@@ -14,6 +16,8 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<RootLayout />}>
             <Route index element={<Dashboard />} />
+            <Route path="freezers" element={<Freezers />} />
+            <Route path="freezers/:freezerId" element={<FreezerDetailsPage />} />
             <Route path="freezer-ai" element={<FreezerAI />} />
             <Route path="prestadores" element={<Prestadores />} />
           </Route>

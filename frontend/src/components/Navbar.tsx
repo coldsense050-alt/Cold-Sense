@@ -65,6 +65,10 @@ export default function Navbar() {
           </span>
         )}
       </NavLink>
+      <NavLink to="/freezers" className={linkClasses}>
+        <Icon name="freezer" />
+        Freezers
+      </NavLink>
       <NavLink to="/prestadores" className={linkClasses}>
         <Icon name="users" />
         Prestadores
