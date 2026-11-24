@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router";
 import {
   ErroFreezerAI,
   FREEZER_AI_URL,
@@ -9,6 +10,8 @@ import {
 import type { Achado, Anomalia, RelatorioFreezerAI } from "../../types/freezerAi";
 import { useFreezer } from "../../hooks/useFreezer";
 import TemperatureChart from "./TemperatureChart";
+import PainelMonitoramento from "./PainelMonitoramento";
+import EnviarRelatorioModal from "./EnviarRelatorioModal";
 import "./FreezerAI.css";
 
 type Preset = "1h" | "6h" | "24h" | "7d" | "30d" | "personalizado";
@@ -96,13 +99,17 @@ export default function FreezerAI() {
   const [perfil, setPerfil] = useState<ParametrosRelatorio["perfil"]>("freezer");
   const { data: freezers, isPending: carregandoFreezers } = useFreezer();
   // "" = ainda não escolhido (usa o primeiro freezer); "todas" = todas as leituras
-  const [freezerEscolhido, setFreezerEscolhido] = useState("");
+  const [parametrosUrl] = useSearchParams();
+  // ?freezer=ID vem do botão "Ver análise" dos alertas
+  const [freezerEscolhido, setFreezerEscolhido] = useState(() => parametrosUrl.get("freezer") ?? "");
   const freezerSelecionado = freezerEscolhido || (freezers[0] ? String(freezers[0].id) : "todas");
   const [resolucao, setResolucao] = useState<ParametrosRelatorio["resolucao"]>("auto");
   const [cenario, setCenario] = useState("normal");
   const [alerta, setAlerta] = useState("");
   const [critico, setCritico] = useState("");
   const [modoSimulacao, setModoSimulacao] = useState(false);
+  // Com um freezer escolhido, a IA usa a faixa cadastrada nele (temperatura_min / temperatura_max)
+  const usaCadastro = freezerSelecionado !== "todas" || modoSimulacao;
   const [apiOnline, setApiOnline] = useState<boolean | null>(null);
 
   const [carregando, setCarregando] = useState(false);
@@ -112,6 +119,7 @@ export default function FreezerAI() {
   const [mostrarTodas, setMostrarTodas] = useState(false);
   const controle = useRef<AbortController | null>(null);
   const [autoAtualizar, setAutoAtualizar] = useState(false);
+  const [modalEmail, setModalEmail] = useState(false);
   const gerarRef = useRef<() => void>(() => {});
 
   useEffect(() => {
@@ -226,6 +234,8 @@ export default function FreezerAI() {
         </span>
       </header>
 
+      <PainelMonitoramento />
+
       <section className="fa-painel fa-form no-print" aria-label="Opções do relatório">
         <div className="fa-campo">
           <span className="fa-rotulo">Período</span>
@@ -290,11 +300,11 @@ export default function FreezerAI() {
           </label>
           <label className="fa-campo fa-campo-curto">
             <span className="fa-rotulo">Alerta acima de (°C)</span>
-            <input inputMode="decimal" placeholder={perfil === "freezer" ? "-12" : "7"} value={alerta} onChange={(e) => setAlerta(e.target.value)} />
+            <input inputMode="decimal" placeholder={usaCadastro ? "do cadastro" : perfil === "freezer" ? "-12" : "7"} value={alerta} onChange={(e) => setAlerta(e.target.value)} />
           </label>
           <label className="fa-campo fa-campo-curto">
             <span className="fa-rotulo">Crítico acima de (°C)</span>
-            <input inputMode="decimal" placeholder={perfil === "freezer" ? "-8" : "10"} value={critico} onChange={(e) => setCritico(e.target.value)} />
+            <input inputMode="decimal" placeholder={usaCadastro ? "do cadastro" : perfil === "freezer" ? "-8" : "10"} value={critico} onChange={(e) => setCritico(e.target.value)} />
           </label>
           {modoSimulacao && (
             <label className="fa-campo">
@@ -332,10 +342,23 @@ export default function FreezerAI() {
           <section className={`fa-painel fa-status fa-st-${relatorio.status}`}>
             <div className="fa-status-topo">
               <div>
-                <span className="fa-rotulo">Status do {relatorio.equipamento.descricao.toLowerCase()}</span>
+                <span className="fa-rotulo">
+                  {relatorio.equipamento.nome
+                    ? `Status · ${relatorio.equipamento.nome}${relatorio.equipamento.localizacao ? ` (${relatorio.equipamento.localizacao})` : ""}`
+                    : `Status do ${relatorio.equipamento.descricao.toLowerCase()}`}
+                </span>
                 <h3>{relatorio.status_texto}</h3>
                 <span className="fa-periodo-txt">
                   {fmtDataHora(relatorio.periodo.inicio)} até {fmtDataHora(relatorio.periodo.fim)}
+                </span>
+                <span className="fa-faixa-txt">
+                  Faixa recomendada: {fmt(relatorio.equipamento.faixa_ideal[0])} a {fmt(relatorio.equipamento.faixa_ideal[1])} °C ·
+                  crítico acima de {fmt(relatorio.equipamento.limite_critico)} °C
+                  {relatorio.equipamento.origem_limites === "cadastro"
+                    ? " (cadastro do freezer)"
+                    : relatorio.equipamento.origem_limites === "manual"
+                      ? " (limites digitados)"
+                      : " (padrão do tipo de equipamento)"}
                 </span>
               </div>
               {relatorio.pontuacao_saude !== null && (
@@ -349,6 +372,7 @@ export default function FreezerAI() {
             <div className="fa-acoes no-print">
               <button type="button" onClick={baixarJson}>Baixar JSON</button>
               <button type="button" onClick={() => window.print()}>Imprimir / PDF</button>
+              <button type="button" onClick={() => setModalEmail(true)}>✉ Enviar por e-mail</button>
             </div>
           </section>
 
@@ -461,6 +485,14 @@ export default function FreezerAI() {
               <p>Nenhuma anomalia registrada no período.</p>
             )}
           </section>
+
+          {modalEmail && (
+            <EnviarRelatorioModal
+              relatorio={relatorio}
+              freezerId={freezerSelecionado === "todas" || modoSimulacao ? null : Number(freezerSelecionado)}
+              onClose={() => setModalEmail(false)}
+            />
+          )}
 
           <p className="fa-rodape">
             {relatorio.aviso} Gerado em {fmtDataHora(relatorio.gerado_em)} · {relatorio.gerado_por} · fonte {relatorio.fonte}

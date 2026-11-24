@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Outlet } from "react-router";
 import Navbar from "../components/Navbar";
+import AlertasFlutuantes from "../components/alertas/AlertasFlutuantes";
 import { useAuth } from "../hooks/useAuth";
 
 export default function RootLayout() {
@@ -59,6 +60,7 @@ export default function RootLayout() {
           <Outlet />
         </main>
       </div>
+      <AlertasFlutuantes />
     </div>
   );
 }

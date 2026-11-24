@@ -1,5 +1,6 @@
 import { NavLink } from "react-router";
 import Icon from "./ui/Icon";
+import { useAlertas } from "../hooks/useAlertas";
 
 function IconMain() {
   return (
@@ -41,6 +42,9 @@ const linkClasses = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 export default function Navbar() {
+  const { pendentes } = useAlertas();
+  const critico = pendentes.some((a) => a.nivel === "critico");
+
   return (
     <nav aria-label="Navegação principal" className="flex flex-wrap gap-1 md:flex-col">
       <NavLink to="/" end className={linkClasses}>
@@ -50,6 +54,16 @@ export default function Navbar() {
       <NavLink to="/freezer-ai" className={linkClasses} title="Relatórios inteligentes da Freezer AI">
         <IconFreezerAI />
         Freezer AI
+        {pendentes.length > 0 && (
+          <span
+            className={`ml-auto rounded-full px-1.5 text-[10px] font-bold text-white ${
+              critico ? "animate-pulse bg-red-600" : "bg-amber-600"
+            }`}
+            title={`${pendentes.length} alerta(s) sem confirmação`}
+          >
+            {pendentes.length}
+          </span>
+        )}
       </NavLink>
       <NavLink to="/prestadores" className={linkClasses}>
         <Icon name="users" />

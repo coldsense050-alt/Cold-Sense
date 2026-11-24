@@ -141,7 +141,13 @@ export interface RelatorioFreezerAI {
   periodo: { inicio: string; fim: string; tempo_real: boolean };
   fonte: string;
   equipamento: {
-    perfil: "freezer" | "refrigerador";
+    /** "cadastro" = faixa vinda da tabela freezers (temperatura_min / temperatura_max) */
+    perfil: "freezer" | "refrigerador" | "cadastro";
+    origem_limites?: "cadastro" | "padrao" | "manual";
+    nome?: string | null;
+    localizacao?: string | null;
+    marca?: string | null;
+    modelo?: string | null;
     descricao: string;
     faixa_ideal: [number, number];
     limite_alerta: number;
@@ -169,4 +175,56 @@ export interface RelatorioFreezerAI {
   serie: { resolucao: "minuto" | "hora"; pontos: PontoSerie[] };
   parametros: { janela_horas: number; historico_dias: number; intervalo_leitura_s: number };
   aviso: string;
+}
+
+/* ------------------------------------------------------------------ */
+/* Alertas automáticos (GET /alertas)                                  */
+/* ------------------------------------------------------------------ */
+export interface EmailAlerta {
+  em: string;
+  tipo: "alerta" | "normalizado";
+  para: string[];
+  ok: boolean;
+  erro: string | null;
+}
+
+export interface Alerta {
+  id: string;
+  freezer: {
+    id: number | null;
+    nome: string | null;
+    localizacao: string | null;
+    marca: string | null;
+    modelo: string | null;
+  };
+  nivel: "atencao" | "critico";
+  nivel_maximo: "atencao" | "critico";
+  titulo: string;
+  achados: { codigo: CodigoAchado; severidade: Severidade; titulo: string; mensagem: string }[];
+  recomendacoes: string[];
+  temperatura: number | null;
+  faixa: [number, number];
+  inicio: string;
+  atualizado_em: string;
+  encerrado_em: string | null;
+  ciente: boolean;
+  ciente_por: string | null;
+  ciente_em: string | null;
+  emails: EmailAlerta[];
+}
+
+export interface EstadoAlertas {
+  ativos: Alerta[];
+  historico: Alerta[];
+  monitor: {
+    ativo: boolean;
+    simulacao: boolean;
+    cenario: string | null;
+    intervalo_s: number;
+    ultima_verificacao: string | null;
+    ultimo_erro: string | null;
+    email_configurado: boolean;
+    email_nivel: string;
+    freezers_monitorados: { id: number | null; nome: string | null; ultima_leitura: string | null }[];
+  };
 }

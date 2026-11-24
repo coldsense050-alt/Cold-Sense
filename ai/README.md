@@ -73,6 +73,55 @@ ficar vazio, as leituras entram sem freezer; nesse caso escolha **Todas as leitu
   ```
   (Avalie com a equipe antes; o site atual já lê essa tabela com a chave publishable.)
 
+## Alertas automáticos (vigia)
+
+Além dos relatórios sob demanda, a API tem um **vigia** que analisa cada freezer
+**a cada minuto**, sozinho:
+
+- Usa a **faixa recomendada do cadastro** (`temperatura_min` / `temperatura_max` da
+  tabela `freezers`): acima da máxima ou abaixo da mínima = **atenção**; mais de
+  3 °C acima da máxima (`FREEZER_AI_MARGEM_CRITICA`) = **crítico**.
+- Também alerta: subida contínua, temperatura acima do limite por muito tempo,
+  aberturas de porta frequentes, falha do sensor e **freezer sem enviar leituras**
+  (ESP32 desligado / falta de energia).
+- **Na tela**: cartão no canto de qualquer página do site, contador no menu
+  "Freezer AI", som e notificação do navegador. O botão **Ciente** registra quem viu.
+- **Por e-mail**: em situação crítica, para os **prestadores ativos ligados ao
+  freezer** (tela Prestadores) + cópias em `FREEZER_AI_EMAIL_COPIA`. Lembrete a cada
+  60 min enquanto ninguém marcar "Ciente"; e-mail de "Normalizado" quando o problema acaba.
+- Para evitar alarme falso, "atenção" só vira alerta se continuar por 2 verificações
+  seguidas; o alerta só é encerrado após 3 verificações normais.
+- Os alertas ficam na memória da API (não cria tabela no banco). Ao reiniciar a API,
+  o histórico some, mas um problema ainda presente gera alerta de novo.
+
+### Configurar o e-mail (Gmail)
+1. Use uma conta Gmail da equipe e ative a **verificação em duas etapas**.
+2. Em myaccount.google.com, procure **"Senhas de app"**, crie uma chamada `Cold-Sense`.
+3. No `ai/.env`: `SMTP_USUARIO=conta@gmail.com` e `SMTP_SENHA=` a senha de 16 letras.
+4. Reinicie a API e use o botão **Testar e-mail** na página Freezer AI.
+
+### Enviar um relatório por e-mail
+Depois de gerar um relatório na página Freezer AI, o botão **✉ Enviar por e-mail** abre
+a lista de **prestadores ativos** (tela Prestadores). Os ligados ao freezer analisado já
+vêm marcados; dá para escrever uma mensagem. Por segurança, a API só envia para e-mails
+cadastrados como prestador ativo (ou listados em `FREEZER_AI_EMAIL_COPIA`).
+
+### Rotas
+| Método | Rota | Descrição |
+|---|---|---|
+| POST | `/relatorio/enviar` | Envia um relatório gerado para prestadores cadastrados |
+| GET | `/alertas` | Alertas ativos, histórico e situação do vigia |
+| POST | `/alertas/verificar` | Verifica agora, sem esperar o próximo minuto |
+| POST | `/alertas/{id}/ciente` | Marca como ciente (`{"por": "email"}`) |
+| POST | `/alertas/teste-email` | Envia e-mail de teste para a conta remetente |
+| POST | `/alertas/simular?cenario=...` | Só em simulação: muda o cenário observado |
+
+**Testar sem ESP32:** `FREEZER_AI_FONTE=simulacao` e `FREEZER_AI_MONITOR_CENARIO=falha_refrigeracao`
+no `ai/.env` → em até 1 minuto aparece um alerta crítico no site.
+
+> Segurança: as rotas de alerta não exigem login. Para publicar a API na internet,
+> proteja-as (ex.: validar o token do Supabase) ou mantenha a API só na rede local.
+
 ## O que ela identifica
 
 | Código | O que significa |
@@ -129,7 +178,7 @@ python -m freezer_ai analisar --arquivo exemplos/backend_atual.json
 ## Analisar os dados reais do Supabase
 
 1. Copie `.env.example` para `.env` e preencha `SUPABASE_URL` e `SUPABASE_KEY`
-   (de preferência a chave *publishable/anon* com permissão de leitura).
+   (com o login ativado no site, use a chave *secret*: a API roda no servidor).
 2. Confira a estrutura real da tabela (mostra colunas e últimas leituras, nunca as chaves):
    ```bash
    python -m freezer_ai verificar-banco
