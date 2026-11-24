@@ -100,9 +100,16 @@ Além dos relatórios sob demanda, a API tem um **vigia** que analisa cada freez
 3. No `ai/.env`: `SMTP_USUARIO=conta@gmail.com` e `SMTP_SENHA=` a senha de 16 letras.
 4. Reinicie a API e use o botão **Testar e-mail** na página Freezer AI.
 
+### Enviar um relatório por e-mail
+Depois de gerar um relatório na página Freezer AI, o botão **✉ Enviar por e-mail** abre
+a lista de **prestadores ativos** (tela Prestadores). Os ligados ao freezer analisado já
+vêm marcados; dá para escrever uma mensagem. Por segurança, a API só envia para e-mails
+cadastrados como prestador ativo (ou listados em `FREEZER_AI_EMAIL_COPIA`).
+
 ### Rotas
 | Método | Rota | Descrição |
 |---|---|---|
+| POST | `/relatorio/enviar` | Envia um relatório gerado para prestadores cadastrados |
 | GET | `/alertas` | Alertas ativos, histórico e situação do vigia |
 | POST | `/alertas/verificar` | Verifica agora, sem esperar o próximo minuto |
 | POST | `/alertas/{id}/ciente` | Marca como ciente (`{"por": "email"}`) |

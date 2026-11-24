@@ -154,6 +154,12 @@ class SupabaseFonte:
         prestadores = [linha.get("prestador") for linha in (r.data or [])]
         return [p for p in prestadores if p and p.get("ativo") and p.get("email")]
 
+    def prestadores_ativos(self) -> list[dict]:
+        """Todos os prestadores de manutenção ATIVOS que têm e-mail cadastrado."""
+        r = (self._cliente.table("prestadores_manutencao")
+             .select("id, nome, email, ativo").eq("ativo", True).execute())
+        return [p for p in (r.data or []) if p.get("email")]
+
     def nome_freezer(self, freezer_id: int) -> Optional[str]:
         try:
             r = (self._cliente.table(self.config.tabela_freezers).select("nome")

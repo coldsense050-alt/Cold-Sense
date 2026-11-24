@@ -166,6 +166,49 @@ def relatorio(
     return rel
 
 
+@app.post("/relatorio/enviar")
+def enviar_relatorio(dados: dict = Body(...)):
+    """Envia um relatório já gerado para prestadores cadastrados.
+
+    Corpo: {"relatorio": {...}, "para": ["email", ...], "mensagem": "...", "enviado_por": "..."}
+    Por segurança, só aceita destinatários cadastrados (prestadores ativos) ou
+    listados em FREEZER_AI_EMAIL_COPIA – a API não envia para qualquer endereço.
+    """
+    from freezer_ai.email_relatorio import conteudo_email_relatorio
+
+    m = _monitor()
+    rel = dados.get("relatorio")
+    para = [str(e).strip().lower() for e in (dados.get("para") or []) if str(e).strip()]
+    if not isinstance(rel, dict) or "status" not in rel:
+        raise HTTPException(422, "Relatório inválido. Gere o relatório antes de enviar.")
+    if not para:
+        raise HTTPException(422, "Escolha pelo menos um destinatário.")
+    if len(para) > 20:
+        raise HTTPException(422, "Escolha no máximo 20 destinatários.")
+    if not m.email.configurado:
+        raise HTTPException(503, "O envio de e-mail não está configurado (SMTP_USUARIO e SMTP_SENHA no ai/.env).")
+
+    permitidos = {e.lower() for e in m.email.copias}
+    try:
+        permitidos |= {p["email"].strip().lower() for p in _supabase().prestadores_ativos()}
+    except Exception as erro:  # noqa: BLE001
+        print(f"[freezer-ai] não foi possível ler os prestadores: {erro}")
+        if not permitidos:
+            raise HTTPException(502, "Não foi possível consultar os prestadores cadastrados.") from None
+    fora = [e for e in para if e not in permitidos]
+    if fora:
+        raise HTTPException(422, f"Destinatário(s) não cadastrado(s) como prestador ativo: {', '.join(fora)}")
+
+    mensagem = (dados.get("mensagem") or "").strip()[:2000] or None
+    enviado_por = (dados.get("enviado_por") or "").strip()[:200] or None
+    assunto, texto, html = conteudo_email_relatorio(rel, mensagem, enviado_por, m.url_site)
+    try:
+        m.email.enviar(sorted(set(para)), assunto, texto, html)
+    except Exception as erro:  # noqa: BLE001
+        raise HTTPException(502, f"Falha no envio: {erro}") from None
+    return {"ok": True, "para": sorted(set(para)), "assunto": assunto}
+
+
 # --------------------------------------------------------------------------- #
 # Alertas automáticos
 # --------------------------------------------------------------------------- #

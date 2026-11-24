@@ -36,3 +36,17 @@ export function verificarAgora(): Promise<EstadoAlertas> {
 export function testarEmail(): Promise<{ ok: boolean; para: string[] }> {
   return pedir("/alertas/teste-email", { method: "POST" });
 }
+
+/** Envia um relatório já gerado para prestadores cadastrados (a API só aceita e-mails cadastrados). */
+export function enviarRelatorioPorEmail(dados: {
+  relatorio: unknown;
+  para: string[];
+  mensagem?: string;
+  enviado_por?: string | null;
+}): Promise<{ ok: boolean; para: string[]; assunto: string }> {
+  return pedir("/relatorio/enviar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dados),
+  });
+}

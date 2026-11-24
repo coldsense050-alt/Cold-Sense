@@ -11,6 +11,7 @@ import type { Achado, Anomalia, RelatorioFreezerAI } from "../../types/freezerAi
 import { useFreezer } from "../../hooks/useFreezer";
 import TemperatureChart from "./TemperatureChart";
 import PainelMonitoramento from "./PainelMonitoramento";
+import EnviarRelatorioModal from "./EnviarRelatorioModal";
 import "./FreezerAI.css";
 
 type Preset = "1h" | "6h" | "24h" | "7d" | "30d" | "personalizado";
@@ -118,6 +119,7 @@ export default function FreezerAI() {
   const [mostrarTodas, setMostrarTodas] = useState(false);
   const controle = useRef<AbortController | null>(null);
   const [autoAtualizar, setAutoAtualizar] = useState(false);
+  const [modalEmail, setModalEmail] = useState(false);
   const gerarRef = useRef<() => void>(() => {});
 
   useEffect(() => {
@@ -370,6 +372,7 @@ export default function FreezerAI() {
             <div className="fa-acoes no-print">
               <button type="button" onClick={baixarJson}>Baixar JSON</button>
               <button type="button" onClick={() => window.print()}>Imprimir / PDF</button>
+              <button type="button" onClick={() => setModalEmail(true)}>✉ Enviar por e-mail</button>
             </div>
           </section>
 
@@ -482,6 +485,14 @@ export default function FreezerAI() {
               <p>Nenhuma anomalia registrada no período.</p>
             )}
           </section>
+
+          {modalEmail && (
+            <EnviarRelatorioModal
+              relatorio={relatorio}
+              freezerId={freezerSelecionado === "todas" || modoSimulacao ? null : Number(freezerSelecionado)}
+              onClose={() => setModalEmail(false)}
+            />
+          )}
 
           <p className="fa-rodape">
             {relatorio.aviso} Gerado em {fmtDataHora(relatorio.gerado_em)} · {relatorio.gerado_por} · fonte {relatorio.fonte}
