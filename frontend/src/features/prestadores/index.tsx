@@ -76,23 +76,23 @@ export default function Prestadores() {
       <section className="shrink-0 rounded-2xl border border-border bg-surface p-4" aria-label="Filtros de prestadores">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
           <div className="flex-1">
-            <label htmlFor="prestador-search" className="mb-2 block text-sm font-medium text-body">Buscar prestador</label>
+            <label htmlFor="prestador-search" className="mb-2 block text-xs font-semibold text-body">Buscar prestador</label>
             <div className="relative">
               <Icon name="search" className="pointer-events-none absolute top-1/2 left-3 size-4.5 -translate-y-1/2 text-muted" />
-              <input id="prestador-search" type="search" placeholder="Nome, e-mail ou telefone" value={search} onChange={(event) => setSearch(event.target.value)} className="min-h-11 w-full rounded-xl border border-border bg-surface py-2.5 pr-3 pl-10 text-base text-heading outline-none placeholder:text-placeholder focus:border-primary focus:ring-3 focus:ring-primary/10" />
+              <input id="prestador-search" type="search" placeholder="Nome, e-mail ou telefone" value={search} onChange={(event) => setSearch(event.target.value)} className="min-h-11 w-full rounded-xl border border-border bg-surface py-2.5 pr-3 pl-10 text-xs font-medium text-body outline-none placeholder:text-placeholder focus:border-primary focus:ring-3 focus:ring-primary/10" />
             </div>
           </div>
           <div className="lg:w-64">
-            <label htmlFor="prestador-filter-freezer" className="mb-2 block text-sm font-medium text-body">Filtrar por freezer</label>
+            <label htmlFor="prestador-filter-freezer" className="mb-2 block text-xs font-semibold text-body">Filtrar por freezer</label>
             <div className="relative">
-              <select id="prestador-filter-freezer" value={freezerId} onChange={(event) => setFreezerId(event.target.value)} disabled={freezerQuery.isPending || freezerQuery.isError} className="min-h-11 w-full appearance-none rounded-xl border border-border bg-surface py-2.5 pr-10 pl-3 text-base text-heading outline-none focus:border-primary focus:ring-3 focus:ring-primary/10 disabled:opacity-60">
+              <select id="prestador-filter-freezer" value={freezerId} onChange={(event) => setFreezerId(event.target.value)} disabled={freezerQuery.isPending || freezerQuery.isError} className="min-h-11 w-full appearance-none rounded-xl border border-border bg-surface py-2.5 pr-10 pl-3 text-xs font-medium text-body outline-none focus:border-primary focus:ring-3 focus:ring-primary/10 disabled:opacity-60">
                 <option value="all">{freezerQuery.isPending ? "Carregando freezers..." : "Todos os freezers"}</option>
                 {freezerQuery.data.map((freezer) => <option key={freezer.id} value={freezer.id}>{freezer.nome}</option>)}
               </select>
               <Icon name="chevron" className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted" />
             </div>
           </div>
-          {hasFilters && <button type="button" onClick={() => { setSearch(""); setFreezerId("all"); }} className="min-h-11 cursor-pointer rounded-xl px-3 text-sm font-semibold text-primary hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-primary">Limpar filtros</button>}
+          {hasFilters && <button type="button" onClick={() => { setSearch(""); setFreezerId("all"); }} className="min-h-11 cursor-pointer rounded-xl px-3 text-xs font-semibold text-primary hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-primary">Limpar filtros</button>}
         </div>
         {freezerQuery.isError && <p className="mt-3 text-sm text-danger" role="alert">O filtro de freezers está indisponível. <button type="button" className="cursor-pointer font-semibold underline" onClick={() => void freezerQuery.refetch()}>Tentar novamente</button></p>}
       </section>
